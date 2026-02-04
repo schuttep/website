@@ -1,12 +1,12 @@
 :root {
-    color-scheme: light;
-    --bg: #f0f4f8;
-    --card: #ffffff;
-    --text: #1a202c;
-    --muted: #718096;
-    --accent: #2c6bff;
-    --accent-dark: #1f4fe0;
-    --border: #cbd5e0;
+    color-scheme: dark;
+    --bg: #1a2a4a;
+    --card: #2d3e5f;
+    --text: #e8eef7;
+    --muted: #a0afc0;
+    --accent: #4a9eff;
+    --accent-dark: #3178d9;
+    --border: #3d4e6f;
     --success: #48bb78;
     --warning: #f6ad55;
     --danger: #f56565;
@@ -99,6 +99,22 @@ body {
 
 .event-form input:focus,
 .event-form textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.event-form select {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    font-size: 15px;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.event-form select:focus {
     outline: none;
     border-color: var(--accent);
 }
@@ -220,11 +236,11 @@ body {
 }
 
 .weekday {
-    background: #f0f2f5;
+    background: #3d4e6f;
     padding: 12px;
     text-align: center;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--accent);
     font-size: 13px;
 }
 
@@ -249,18 +265,18 @@ body {
 }
 
 .calendar-day:hover {
-    background: linear-gradient(135deg, #f8faff 0%, #f0f4f8 100%);
+    background: linear-gradient(135deg, #3d4e6f 0%, #2d3e5f 100%);
     border-color: var(--accent);
-    box-shadow: 0 4px 12px rgba(44, 107, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(74, 158, 255, 0.2);
 }
 
 .calendar-day.other-month {
-    background: #fafbfc;
+    background: #1f2e48;
     color: var(--muted);
 }
 
 .calendar-day.today {
-    background: linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%);
+    background: linear-gradient(135deg, #2a4a7a 0%, #1f3a5a 100%);
     font-weight: 600;
     border: 2px solid var(--accent);
 }

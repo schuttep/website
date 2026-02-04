@@ -8,6 +8,9 @@ const nextMonthBtn = document.getElementById('next-month');
 const dateInput = document.getElementById('date');
 const colorInput = document.getElementById('color');
 const colorLabel = document.getElementById('color-label');
+const recurrenceInput = document.getElementById('recurrence');
+const recurrenceEndLabel = document.getElementById('recurrence-end-label');
+const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
 
 const colorNames = {
     '#2c6bff': 'Blue',
@@ -22,6 +25,50 @@ const colorNames = {
 
 let currentDate = new Date();
 let allEvents = [];
+
+function isEventOnDate(event, date) {
+    const eventDate = new Date(event.date);
+    const dateOnly = new Date(date);
+    eventDate.setHours(0, 0, 0, 0);
+    dateOnly.setHours(0, 0, 0, 0);
+
+    if (eventDate.getTime() === dateOnly.getTime()) {
+        return true;
+    }
+
+    if (event.recurrence === 'none' || !event.recurrence) {
+        return false;
+    }
+
+    const endDate = event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : null;
+    if (endDate) {
+        endDate.setHours(0, 0, 0, 0);
+        if (dateOnly.getTime() > endDate.getTime()) {
+            return false;
+        }
+    }
+
+    if (dateOnly.getTime() < eventDate.getTime()) {
+        return false;
+    }
+
+    const daysDiff = Math.floor((dateOnly.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    switch (event.recurrence) {
+        case 'daily':
+            return true;
+        case 'weekly':
+            return daysDiff % 7 === 0;
+        case 'biweekly':
+            return daysDiff % 14 === 0;
+        case 'monthly':
+            return eventDate.getDate() === dateOnly.getDate();
+        case 'yearly':
+            return eventDate.getMonth() === dateOnly.getMonth() && eventDate.getDate() === dateOnly.getDate();
+        default:
+            return false;
+    }
+}
 
 async function fetchEvents() {
     statusEl.textContent = 'Loading events...';
@@ -76,7 +123,7 @@ function renderCalendar() {
         }
 
         const dateStr = date.toISOString().split('T')[0];
-        const dayEvents = allEvents.filter(e => e.date === dateStr);
+        const dayEvents = allEvents.filter(e => isEventOnDate(e, date));
 
         const numberEl = document.createElement('div');
         numberEl.className = 'calendar-day-number';
@@ -184,6 +231,8 @@ async function handleCreate(event) {
         form.reset();
         colorInput.value = '#2c6bff';
         colorLabel.textContent = 'Blue';
+        recurrenceInput.value = 'none';
+        recurrenceEndLabel.style.display = 'none';
         await fetchEvents();
     } catch (error) {
         statusEl.textContent = error.message;
@@ -209,6 +258,13 @@ async function handleDelete(id) {
 form.addEventListener('submit', handleCreate);
 colorInput.addEventListener('change', () => {
     colorLabel.textContent = colorNames[colorInput.value] || 'Custom';
+});
+recurrenceInput.addEventListener('change', () => {
+    if (recurrenceInput.value !== 'none') {
+        recurrenceEndLabel.style.display = 'grid';
+    } else {
+        recurrenceEndLabel.style.display = 'none';
+    }
 });
 prevMonthBtn.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1);

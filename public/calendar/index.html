@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Payton Schutte • Calendar</title>
+    <title>Ashley and Paytons Schedule</title>
     <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
     <header class="site-header">
         <div class="header-content">
-            <h1>Calendar</h1>
+            <h1>Ashley and Paytons Schedule</h1>
             <nav class="header-nav">
                 <a href="/">Home</a>
                 <a href="/portfolio">Portfolio Planner</a>
@@ -59,6 +59,21 @@
                         <input type="color" id="color" name="color" value="#2c6bff" />
                         <span id="color-label">Blue</span>
                     </div>
+                </label>
+                <label>
+                    Recurrence
+                    <select id="recurrence" name="recurrence">
+                        <option value="none">None</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </label>
+                <label id="recurrence-end-label" style="display: none;">
+                    Recurrence End Date
+                    <input type="date" id="recurrence-end-date" name="recurrenceEndDate" />
                 </label>
                 <label>
                     Notes
