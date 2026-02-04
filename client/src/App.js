@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './App.css';
 import axios from 'axios';
 import PortfolioForm from './PortfolioForm';
@@ -113,6 +114,7 @@ function App() {
                         <nav className="header-links">
                             <a href="/">Main Site</a>
                             <a href="/calendar">Calendar</a>
+                            <Link to="/aiportfolio">AI Portfolio</Link>
                         </nav>
                         <button
                             className="update-btn"

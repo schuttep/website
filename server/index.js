@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const app = express();
@@ -73,7 +74,10 @@ const stockNames = {
     'GOOG': 'Alphabet Inc.',
     'AVGO': 'Broadcom Inc.',
     'VOO': 'Vanguard S&P 500 ETF',
-    'ZION': 'Zions Bancorporation'
+    'ZION': 'Zions Bancorporation',
+    'IEF': 'iShares 7-10 Year Treasury Bond ETF',
+    'LQD': 'iShares iBoxx Investment Grade Corporate Bond ETF',
+    'GLD': 'SPDR Gold Trust'
 };
 
 // Persistent storage for portfolios
@@ -81,6 +85,9 @@ const portfoliosFile = path.join(__dirname, 'portfolios.json');
 
 // Persistent storage for calendar events
 const calendarFile = path.join(__dirname, 'calendar.json');
+
+// Persistent storage for AI portfolio
+const aiPortfolioFile = path.join(__dirname, 'aiportfolio.json');
 
 function loadPortfolios() {
     try {
@@ -132,11 +139,59 @@ function saveCalendarEvents() {
     }
 }
 
+function loadAIPortfolio() {
+    try {
+        if (fs.existsSync(aiPortfolioFile)) {
+            const data = fs.readFileSync(aiPortfolioFile, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading AI portfolio:', error);
+    }
+
+    return {
+        currentAllocation: {
+            date: new Date().toISOString().split('T')[0],
+            regime: 'Neutral',
+            weights: { SPY: 0.45, IEF: 0.35, LQD: 0.15, GLD: 0.05 },
+            indicators: { spyClose: 0, ma50: 0, ma200: 0, vol20: 0, dd63: 0 },
+            reason: 'Initial allocation - Neutral regime as default starting point'
+        },
+        rebalanceHistory: [],
+        modelPerformance: {
+            startDate: new Date().toISOString().split('T')[0],
+            startingNAV: 100000,
+            currentNAV: 100000,
+            positions: {
+                SPY: { shares: 0, value: 0 },
+                IEF: { shares: 0, value: 0 },
+                LQD: { shares: 0, value: 0 },
+                GLD: { shares: 0, value: 0 },
+                CASH: 100000
+            },
+            equityCurve: [],
+            monthlyReturns: []
+        },
+        priceHistory: { SPY: [], IEF: [], LQD: [], GLD: [] }
+    };
+}
+
+function saveAIPortfolio() {
+    try {
+        fs.writeFileSync(aiPortfolioFile, JSON.stringify(aiPortfolioData, null, 2));
+    } catch (error) {
+        console.error('Error saving AI portfolio:', error);
+    }
+}
+
 // Load portfolios from file on startup
 let portfolios = loadPortfolios();
 
 // Load calendar events from file on startup
 let calendarEvents = loadCalendarEvents();
+
+// Load AI portfolio data
+let aiPortfolioData = loadAIPortfolio();
 
 // Real stock prices database (updated manually, these are realistic Feb 2026 prices)
 const realStockPrices = {
@@ -166,7 +221,10 @@ const realStockPrices = {
     'GOOG': 140.32,
     'AVGO': 178.92,
     'VOO': 524.67,
-    'ZION': 52.34
+    'ZION': 52.34,
+    'IEF': 96.45,
+    'LQD': 112.83,
+    'GLD': 189.76
 };
 
 // Function to get historical stock price for a specific date
@@ -785,6 +843,308 @@ app.put('/api/portfolio/:id', (req, res) => {
     res.json(portfolio);
 });
 
+// =============================================================================
+// AI PORTFOLIO - Regime-aware Factor Rotation
+// =============================================================================
+
+// Helper functions for regime calculation
+function calculateMA(prices, period) {
+    if (prices.length < period) return null;
+    const slice = prices.slice(-period);
+    return slice.reduce((sum, p) => sum + p.close, 0) / period;
+}
+
+function calculateVolatility(prices, period) {
+    if (prices.length < period) return null;
+    const slice = prices.slice(-period);
+    const returns = [];
+    for (let i = 1; i < slice.length; i++) {
+        returns.push(Math.log(slice[i].close / slice[i - 1].close));
+    }
+    const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
+    const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
+    return Math.sqrt(variance * 252); // Annualized
+}
+
+function calculateDrawdown(prices, period) {
+    if (prices.length < period) return null;
+    const slice = prices.slice(-period);
+    const maxPrice = Math.max(...slice.map(p => p.close));
+    const currentPrice = slice[slice.length - 1].close;
+    return (currentPrice - maxPrice) / maxPrice;
+}
+
+function determineRegime(spyPrices) {
+    if (spyPrices.length < 200) {
+        return {
+            regime: 'Neutral',
+            indicators: {},
+            reason: 'Insufficient price history (need 200 days minimum)'
+        };
+    }
+
+    const currentClose = spyPrices[spyPrices.length - 1].close;
+    const ma50 = calculateMA(spyPrices, 50);
+    const ma200 = calculateMA(spyPrices, 200);
+    const vol20 = calculateVolatility(spyPrices, 20);
+    const dd63 = calculateDrawdown(spyPrices, 63);
+
+    const indicators = {
+        spyClose: currentClose,
+        ma50: ma50,
+        ma200: ma200,
+        vol20: vol20,
+        dd63: dd63
+    };
+
+    // Thresholds
+    const VOL_RISK_ON = 0.20;
+    const VOL_RISK_OFF = 0.30;
+    const DD_RISK_OFF = -0.10;
+
+    let regime = 'Neutral';
+    let reasons = [];
+
+    // Risk-Off conditions (highest priority)
+    if (currentClose < ma200) {
+        regime = 'Risk-Off';
+        reasons.push(`SPY closed below 200-day MA (${currentClose.toFixed(2)} vs ${ma200.toFixed(2)})`);
+    }
+    if (dd63 < DD_RISK_OFF) {
+        regime = 'Risk-Off';
+        reasons.push(`Drawdown from 63-day high is ${(dd63 * 100).toFixed(2)}% (threshold: ${DD_RISK_OFF * 100}%)`);
+    }
+    if (vol20 > VOL_RISK_OFF) {
+        regime = 'Risk-Off';
+        reasons.push(`20-day volatility is ${(vol20 * 100).toFixed(2)}% (threshold: ${VOL_RISK_OFF * 100}%)`);
+    }
+
+    // Risk-On conditions (if not Risk-Off)
+    if (regime === 'Neutral' && currentClose > ma200 && currentClose > ma50 && vol20 < VOL_RISK_ON) {
+        regime = 'Risk-On';
+        reasons.push(`SPY above both MAs (${currentClose.toFixed(2)} > ${ma50.toFixed(2)}, ${ma200.toFixed(2)})`);
+        reasons.push(`Low volatility at ${(vol20 * 100).toFixed(2)}% (threshold: ${VOL_RISK_ON * 100}%)`);
+    }
+
+    const reason = reasons.length > 0 ? reasons.join('. ') : 'Market conditions are mixed - defaulting to Neutral regime.';
+
+    return { regime, indicators, reason };
+}
+
+function getTargetWeights(regime) {
+    const allocations = {
+        'Risk-On': { SPY: 0.70, IEF: 0.15, LQD: 0.10, GLD: 0.05 },
+        'Neutral': { SPY: 0.45, IEF: 0.35, LQD: 0.15, GLD: 0.05 },
+        'Risk-Off': { SPY: 0.20, IEF: 0.60, LQD: 0.10, GLD: 0.10 }
+    };
+    return allocations[regime] || allocations['Neutral'];
+}
+
+async function simulateRebalance(currentPositions, targetWeights, prices, transactionCost = 0.0005) {
+    const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+    const currentNAV = Object.keys(currentPositions).reduce((sum, symbol) => {
+        return sum + (currentPositions[symbol].value || 0);
+    }, 0) + (currentPositions.CASH || 0);
+
+    const targetValues = {};
+    symbols.forEach(symbol => {
+        targetValues[symbol] = currentNAV * targetWeights[symbol];
+    });
+
+    const newPositions = { CASH: 0 };
+    let totalTransactionCosts = 0;
+    const trades = [];
+
+    for (const symbol of symbols) {
+        const currentValue = currentPositions[symbol]?.value || 0;
+        const targetValue = targetValues[symbol];
+        const price = prices[symbol];
+
+        if (!price) {
+            console.error(`No price found for ${symbol}`);
+            continue;
+        }
+
+        const targetShares = Math.floor(targetValue / price);
+        const currentShares = currentPositions[symbol]?.shares || 0;
+        const shareDiff = targetShares - currentShares;
+
+        if (shareDiff !== 0) {
+            const tradeCost = Math.abs(shareDiff * price) * transactionCost;
+            totalTransactionCosts += tradeCost;
+            trades.push({
+                symbol,
+                action: shareDiff > 0 ? 'BUY' : 'SELL',
+                shares: Math.abs(shareDiff),
+                price,
+                cost: tradeCost
+            });
+        }
+
+        newPositions[symbol] = {
+            shares: targetShares,
+            value: targetShares * price
+        };
+    }
+
+    // Calculate cash after transactions
+    const totalInvested = symbols.reduce((sum, symbol) => sum + newPositions[symbol].value, 0);
+    newPositions.CASH = currentNAV - totalInvested - totalTransactionCosts;
+
+    const finalNAV = Object.keys(newPositions).reduce((sum, symbol) => {
+        return sum + (newPositions[symbol].value || 0);
+    }, 0) + newPositions.CASH;
+
+    const turnover = trades.reduce((sum, trade) => sum + (trade.shares * trade.price), 0) / currentNAV;
+
+    return {
+        newPositions,
+        trades,
+        turnover: turnover,
+        transactionCosts: totalTransactionCosts,
+        navBefore: currentNAV,
+        navAfter: finalNAV
+    };
+}
+
+// API Endpoints
+
+// Get current allocation
+app.get('/api/ai-portfolio/allocation/current', (req, res) => {
+    res.json(aiPortfolioData.currentAllocation);
+});
+
+// Get allocation history
+app.get('/api/ai-portfolio/allocation/history', (req, res) => {
+    res.json({ history: aiPortfolioData.rebalanceHistory });
+});
+
+// Get model performance
+app.get('/api/ai-portfolio/model/performance', (req, res) => {
+    const { from, to } = req.query;
+    let equityCurve = aiPortfolioData.modelPerformance.equityCurve;
+
+    if (from || to) {
+        equityCurve = equityCurve.filter(point => {
+            const date = point.date;
+            if (from && date < from) return false;
+            if (to && date > to) return false;
+            return true;
+        });
+    }
+
+    res.json({
+        ...aiPortfolioData.modelPerformance,
+        equityCurve
+    });
+});
+
+// Get all rebalances
+app.get('/api/ai-portfolio/model/rebalances', (req, res) => {
+    res.json({ rebalances: aiPortfolioData.rebalanceHistory });
+});
+
+// Get specific rebalance details
+app.get('/api/ai-portfolio/model/rebalance/:date', (req, res) => {
+    const rebalance = aiPortfolioData.rebalanceHistory.find(r => r.date === req.params.date);
+    if (!rebalance) {
+        return res.status(404).json({ error: 'Rebalance not found' });
+    }
+    res.json(rebalance);
+});
+
+// Manual trigger for rebalance (for testing)
+app.post('/api/ai-portfolio/rebalance', async (req, res) => {
+    try {
+        const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+
+        // Fetch latest prices
+        const prices = {};
+        for (const symbol of symbols) {
+            try {
+                const stockData = await getStockPrice(symbol);
+                prices[symbol] = stockData.price;
+
+                // Add to price history
+                if (!aiPortfolioData.priceHistory[symbol]) {
+                    aiPortfolioData.priceHistory[symbol] = [];
+                }
+                aiPortfolioData.priceHistory[symbol].push({
+                    date: new Date().toISOString().split('T')[0],
+                    close: stockData.price
+                });
+            } catch (error) {
+                console.error(`Failed to get price for ${symbol}:`, error);
+                return res.status(500).json({ error: `Failed to fetch price for ${symbol}` });
+            }
+        }
+
+        // Determine regime
+        const { regime, indicators, reason } = determineRegime(aiPortfolioData.priceHistory.SPY);
+        const targetWeights = getTargetWeights(regime);
+
+        // Simulate rebalance
+        const rebalanceResult = await simulateRebalance(
+            aiPortfolioData.modelPerformance.positions,
+            targetWeights,
+            prices
+        );
+
+        // Update model performance
+        aiPortfolioData.modelPerformance.positions = rebalanceResult.newPositions;
+        aiPortfolioData.modelPerformance.currentNAV = rebalanceResult.navAfter;
+
+        // Add to equity curve
+        aiPortfolioData.modelPerformance.equityCurve.push({
+            date: new Date().toISOString().split('T')[0],
+            nav: rebalanceResult.navAfter,
+            regime: regime
+        });
+
+        // Update current allocation
+        const newAllocation = {
+            date: new Date().toISOString().split('T')[0],
+            regime: regime,
+            weights: targetWeights,
+            indicators: indicators,
+            reason: reason
+        };
+
+        // Save to history
+        aiPortfolioData.rebalanceHistory.push({
+            ...newAllocation,
+            trades: rebalanceResult.trades,
+            turnover: rebalanceResult.turnover,
+            transactionCosts: rebalanceResult.transactionCosts,
+            navBefore: rebalanceResult.navBefore,
+            navAfter: rebalanceResult.navAfter
+        });
+
+        aiPortfolioData.currentAllocation = newAllocation;
+
+        // Save to disk
+        saveAIPortfolio();
+
+        res.json({
+            message: 'Rebalance completed',
+            allocation: newAllocation,
+            performance: {
+                navBefore: rebalanceResult.navBefore,
+                navAfter: rebalanceResult.navAfter,
+                turnover: rebalanceResult.turnover,
+                transactionCosts: rebalanceResult.transactionCosts
+            }
+        });
+    } catch (error) {
+        console.error('Rebalance error:', error);
+        res.status(500).json({ error: 'Failed to execute rebalance', message: error.message });
+    }
+});
+
+// =============================================================================
+// END AI PORTFOLIO
+// =============================================================================
+
 // Development only: Shutdown endpoint
 if (process.env.NODE_ENV === 'development') {
     app.post('/api/shutdown', (req, res) => {
@@ -814,4 +1174,83 @@ app.use((req, res) => {
 
 app.listen(PORT, '0.0.0.0', async () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
+
+    // Schedule nightly AI portfolio update (runs at 6 PM EST every Friday)
+    // Cron format: minute hour day-of-month month day-of-week
+    cron.schedule('0 18 * * 5', async () => {
+        console.log('Running scheduled AI portfolio rebalance...');
+        try {
+            const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+
+            // Fetch latest prices
+            const prices = {};
+            for (const symbol of symbols) {
+                try {
+                    const stockData = await getStockPrice(symbol);
+                    prices[symbol] = stockData.price;
+
+                    if (!aiPortfolioData.priceHistory[symbol]) {
+                        aiPortfolioData.priceHistory[symbol] = [];
+                    }
+                    aiPortfolioData.priceHistory[symbol].push({
+                        date: new Date().toISOString().split('T')[0],
+                        close: stockData.price
+                    });
+                } catch (error) {
+                    console.error(`Failed to get price for ${symbol}:`, error);
+                }
+            }
+
+            // Only rebalance if we have enough price history
+            if (aiPortfolioData.priceHistory.SPY.length >= 200) {
+                const { regime, indicators, reason } = determineRegime(aiPortfolioData.priceHistory.SPY);
+                const targetWeights = getTargetWeights(regime);
+
+                const rebalanceResult = await simulateRebalance(
+                    aiPortfolioData.modelPerformance.positions,
+                    targetWeights,
+                    prices
+                );
+
+                aiPortfolioData.modelPerformance.positions = rebalanceResult.newPositions;
+                aiPortfolioData.modelPerformance.currentNAV = rebalanceResult.navAfter;
+
+                aiPortfolioData.modelPerformance.equityCurve.push({
+                    date: new Date().toISOString().split('T')[0],
+                    nav: rebalanceResult.navAfter,
+                    regime: regime
+                });
+
+                const newAllocation = {
+                    date: new Date().toISOString().split('T')[0],
+                    regime: regime,
+                    weights: targetWeights,
+                    indicators: indicators,
+                    reason: reason
+                };
+
+                aiPortfolioData.rebalanceHistory.push({
+                    ...newAllocation,
+                    trades: rebalanceResult.trades,
+                    turnover: rebalanceResult.turnover,
+                    transactionCosts: rebalanceResult.transactionCosts,
+                    navBefore: rebalanceResult.navBefore,
+                    navAfter: rebalanceResult.navAfter
+                });
+
+                aiPortfolioData.currentAllocation = newAllocation;
+                saveAIPortfolio();
+
+                console.log(`Scheduled rebalance completed. Regime: ${regime}, NAV: $${rebalanceResult.navAfter.toLocaleString()}`);
+            } else {
+                console.log('Not enough price history for rebalance. Need 200 days, have:', aiPortfolioData.priceHistory.SPY.length);
+            }
+        } catch (error) {
+            console.error('Scheduled rebalance failed:', error);
+        }
+    }, {
+        timezone: "America/New_York"
+    });
+
+    console.log('AI Portfolio scheduled job configured (Fridays at 6 PM EST)');
 });

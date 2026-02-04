@@ -1,0 +1,53 @@
+{
+    "currentAllocation": {
+        "date": "2026-02-04",
+        "regime": "Neutral",
+        "weights": {
+            "SPY": 0.45,
+            "IEF": 0.35,
+            "LQD": 0.15,
+            "GLD": 0.05
+        },
+        "indicators": {
+            "spyClose": 0,
+            "ma50": 0,
+            "ma200": 0,
+            "vol20": 0,
+            "dd63": 0
+        },
+        "reason": "Initial allocation - Neutral regime as default starting point"
+    },
+    "rebalanceHistory": [],
+    "modelPerformance": {
+        "startDate": "2026-02-04",
+        "startingNAV": 100000,
+        "currentNAV": 100000,
+        "positions": {
+            "SPY": {
+                "shares": 0,
+                "value": 0
+            },
+            "IEF": {
+                "shares": 0,
+                "value": 0
+            },
+            "LQD": {
+                "shares": 0,
+                "value": 0
+            },
+            "GLD": {
+                "shares": 0,
+                "value": 0
+            },
+            "CASH": 100000
+        },
+        "equityCurve": [],
+        "monthlyReturns": []
+    },
+    "priceHistory": {
+        "SPY": [],
+        "IEF": [],
+        "LQD": [],
+        "GLD": []
+    }
+}
