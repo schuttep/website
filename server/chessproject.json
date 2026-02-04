@@ -15,7 +15,8 @@
     "tasks": {
         "hardware": [],
         "software": [],
-        "internet": []
+        "internet": [],
+        "misc": []
     },
     "calendar": {
         "group": {},
