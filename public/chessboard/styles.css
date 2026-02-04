@@ -1,20 +1,33 @@
 :root {
-    --primary: #667eea;
-    --primary-dark: #5568d3;
+    --primary: #2d5a2d;
+    --primary-dark: #1f3f1f;
     --success: #48bb78;
     --danger: #f56565;
     --warning: #f6ad55;
     --bg: #f5f7fa;
-    --card: #ffffff;
-    --text: #2d3748;
-    --text-muted: #718096;
-    --border: #e2e8f0;
+    --card: #2d2d2d;
+    --text: #ffffff;
+    --text-muted: #b0b0b0;
+    --border: #444444;
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+input,
+select,
+textarea {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border-color: #555555;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #b0b0b0;
 }
 
 body {
@@ -707,7 +720,6 @@ body {
     font-size: 1rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     transition: all 0.2s;
-    background: white;
 }
 
 .todo-form input:focus {
@@ -737,7 +749,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: white;
+    background: #3a3a3a;
     border-radius: 8px;
     border-left: 4px solid var(--text-muted);
     transition: all 0.2s;
@@ -789,7 +801,8 @@ body {
     border-radius: 6px;
     font-size: 0.9rem;
     cursor: pointer;
-    background: white;
+    background: #3a3a3a;
+    color: #ffffff;
     transition: all 0.2s;
 }
 
@@ -852,7 +865,8 @@ body {
 }
 
 .view-btn {
-    background: white;
+    background: #3a3a3a;
+    color: #ffffff;
     border: 2px solid var(--border);
     padding: 0.5rem 1.25rem;
     border-radius: 4px;
@@ -899,7 +913,7 @@ body {
 }
 
 .day-column {
-    background: white;
+    background: #3a3a3a;
     border: 2px solid var(--border);
     border-radius: 8px;
     padding: 0.75rem;
@@ -1018,7 +1032,7 @@ body {
 }
 
 .month-day {
-    background: white;
+    background: #3a3a3a;
     border: 2px solid var(--border);
     border-radius: 6px;
     padding: 0.5rem;
@@ -1215,7 +1229,6 @@ body {
     border: 1px solid var(--border);
     border-radius: 4px;
     font-size: 0.9rem;
-    background: white;
     cursor: pointer;
     transition: border-color 0.2s;
 }
