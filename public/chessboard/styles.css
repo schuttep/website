@@ -710,10 +710,12 @@ body {
     gap: 1rem;
     margin-bottom: 2rem;
     align-items: stretch;
+    flex-wrap: wrap;
 }
 
-.todo-form input {
+.todo-form input[type="text"] {
     flex: 1;
+    min-width: 200px;
     padding: 1rem 1.25rem;
     border: 2px solid var(--border);
     border-radius: 8px;
@@ -722,7 +724,32 @@ body {
     transition: all 0.2s;
 }
 
-.todo-form input:focus {
+.todo-form .assignee-select {
+    min-width: 140px;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    background: #3a3a3a;
+    color: #ffffff;
+    transition: all 0.2s;
+}
+
+.todo-form .deadline-input {
+    min-width: 150px;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #3a3a3a;
+    color: #ffffff;
+    transition: all 0.2s;
+}
+
+.todo-form input:focus,
+.todo-form .assignee-select:focus,
+.todo-form .deadline-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -781,12 +808,57 @@ body {
 
 .task-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .task-text {
     font-size: 1rem;
     color: var(--text);
     line-height: 1.5;
+}
+
+.task-meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.task-assignee {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: white;
+}
+
+.task-assignee.payton {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.task-assignee.quinn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.task-assignee.danny {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.task-assignee.group {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.task-deadline {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
 }
 
 .task-actions {

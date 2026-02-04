@@ -43,6 +43,10 @@ function showTodoSection(section) {
 async function addTask(section) {
     const input = document.getElementById(`${section}-task-input`);
     const taskText = input.value.trim();
+    const assigneeSelect = document.getElementById(`${section}-assignee-select`);
+    const deadlineInput = document.getElementById(`${section}-deadline-input`);
+    const assignee = assigneeSelect.value;
+    const deadline = deadlineInput.value;
 
     if (!taskText) return;
 
@@ -50,7 +54,9 @@ async function addTask(section) {
         id: Date.now().toString(),
         text: taskText,
         status: 'not-started',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        assignedTo: assignee || null,
+        deadline: deadline || null
     };
 
     try {
@@ -63,7 +69,14 @@ async function addTask(section) {
         if (response.ok) {
             tasks[section].push(task);
             input.value = '';
+            assigneeSelect.value = '';
+            deadlineInput.value = '';
             renderTasks(section);
+
+            // If task has both assignee and deadline, add to calendar
+            if (assignee && deadline) {
+                await addTaskToCalendar(assignee, deadline, taskText);
+            }
         }
     } catch (error) {
         console.error('Error adding task:', error);
@@ -117,21 +130,68 @@ function renderTasks(section) {
         return;
     }
 
-    container.innerHTML = sectionTasks.map(task => `
-        <div class="task-item ${task.status}">
-            <div class="task-content">
-                <span class="task-text">${task.text}</span>
+    container.innerHTML = sectionTasks.map(task => {
+        const assigneeBadge = task.assignedTo ? `<span class="task-assignee ${task.assignedTo}">${getAssigneeInitial(task.assignedTo)}</span>` : '';
+        const deadlineText = task.deadline ? `<span class="task-deadline">📅 ${formatDate(task.deadline)}</span>` : '';
+
+        return `
+            <div class="task-item ${task.status}">
+                <div class="task-content">
+                    <span class="task-text">${task.text}</span>
+                    <div class="task-meta">
+                        ${assigneeBadge}
+                        ${deadlineText}
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <select class="task-status" onchange="updateTaskStatus('${section}', '${task.id}', this.value)">
+                        <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                        <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
+                    </select>
+                    <button onclick="deleteTask('${section}', '${task.id}')" class="btn-delete">✕</button>
+                </div>
             </div>
-            <div class="task-actions">
-                <select class="task-status" onchange="updateTaskStatus('${section}', '${task.id}', this.value)">
-                    <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                    <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                    <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
-                </select>
-                <button onclick="deleteTask('${section}', '${task.id}')" class="btn-delete">✕</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+// Helper function to get assignee initial
+function getAssigneeInitial(assignee) {
+    const initials = {
+        'payton': 'P',
+        'quinn': 'Q',
+        'danny': 'D',
+        'group': 'G'
+    };
+    return initials[assignee] || '';
+}
+
+// Helper function to format date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// Add task to calendar
+async function addTaskToCalendar(person, deadline, taskText) {
+    try {
+        const response = await fetch(`/api/chess/calendar/${person}/${deadline}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: `Task: ${taskText}`,
+                color: 'blue',
+                id: Date.now().toString()
+            })
+        });
+
+        if (response.ok) {
+            loadCalendarEvents(); // Reload calendar to show new event
+        }
+    } catch (error) {
+        console.error('Error adding task to calendar:', error);
+    }
 }
 
 // Render all tasks
