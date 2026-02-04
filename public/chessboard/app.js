@@ -7,9 +7,11 @@ function toggleSection(headerElement) {
 // To-Do List
 let tasks = { hardware: [], software: [], internet: [] };
 
-// Load tasks on page load
+// Load tasks and calendar on page load
 document.addEventListener('DOMContentLoaded', async () => {
     await loadTasks();
+    await loadCalendarEvents();
+    renderWeeklyCalendar();
 });
 
 // Load tasks from API
@@ -134,6 +136,7 @@ function renderAllTasks() {
     renderTasks('software');
     renderTasks('internet');
 }
+
 // Weekly Calendar
 let currentWeekStart = new Date();
 currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
@@ -150,21 +153,17 @@ const COLORS = {
     purple: '#9f7aea'
 };
 
-// Load calendar events on page load
-document.addEventListener('DOMContentLoaded', async () => {
-    // Tasks load already happens
-    // Now load calendar
-    await loadCalendarEvents();
-    renderWeeklyCalendar();
-});
-
 // Load calendar events from API
 async function loadCalendarEvents() {
     try {
         const response = await fetch('/api/chess/calendar');
         const data = await response.json();
         calendarEvents = data.events || { group: {}, payton: {}, quinn: {}, danny: {} };
-        renderWeeklyCalendar();
+        if (currentView === 'weekly') {
+            renderWeeklyCalendar();
+        } else {
+            renderMonthlyCalendar();
+        }
     } catch (error) {
         console.error('Error loading calendar events:', error);
     }
@@ -202,6 +201,40 @@ function renderWeeklyCalendar() {
     renderCalendarForPerson('danny');
 }
 
+// Render calendar for specific person (weekly view)
+function renderCalendarForPerson(person) {
+    const container = document.getElementById(`${person}-calendar`);
+    let html = '<div class="days-grid">';
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = WEEKDAYS[i];
+        const dayNum = date.getDate();
+
+        const dayEvents = calendarEvents[person][dateStr] || [];
+
+        html += `
+            <div class="day-column">
+                <div class="day-header">${dayName}</div>
+                <div class="day-num">${dayNum}</div>
+                <div class="day-events">
+                    ${dayEvents.map(evt => `
+                        <div class="event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')">
+                            ${evt.title}
+                            <span class="delete-hint">✕</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
 // Switch view
 function switchView(view) {
     currentView = view;
@@ -216,25 +249,6 @@ function switchView(view) {
         renderMonthlyCalendar();
     }
 }
-const dateStr = date.toISOString().split('T')[0];
-const dayName = WEEKDAYS[i];
-const dayNum = date.getDate();
-
-const dayEvents = calendarEvents[person][dateStr] || [];
-
-<div class="event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')">
-    ${evt.title}
-    <span class="delete-hint">✕</span>
-</div>
-`).join('')}
-                </div>
-            </div>
-        `;
-    }
-
-html += '</div>';
-container.innerHTML = html;
-}
 
 // Render monthly calendar
 function renderMonthlyCalendar() {
@@ -246,6 +260,51 @@ function renderMonthlyCalendar() {
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
     document.getElementById('week-display').textContent = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const people = ['group', 'payton', 'quinn', 'danny'];
+    people.forEach(person => {
+        renderMonthCalendarForPerson(person, startDate, year, month);
+    });
+}
+
+function renderMonthCalendarForPerson(person, startDate, year, month) {
+    const container = document.getElementById(`${person}-calendar`);
+    let html = '<div class="month-grid">';
+
+    // Day headers
+    WEEKDAYS.forEach(day => {
+        html += `<div class="month-day-header">${day.substr(0, 3)}</div>`;
+    });
+
+    // Days
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const isCurrentMonth = date.getMonth() === month;
+
+        const dayEvents = calendarEvents[person][dateStr] || [];
+
+        html += `
+            <div class="month-day ${isCurrentMonth ? '' : 'other-month'}">
+                <div class="month-date">${date.getDate()}</div>
+                <div class="month-events">
+                    ${dayEvents.map(evt => `
+                        <div class="month-event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')"></div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Add calendar event
+async function addCalendarEvent(person) {
+    const input = document.getElementById(`${person}-event-input`);
+    const daySelect = document.getElementById(`${person}-day-select`);
     const colorSelect = document.getElementById(`${person}-color-select`);
 
     const title = input.value.trim();
@@ -272,35 +331,7 @@ function renderMonthlyCalendar() {
         if (response.ok) {
             input.value = '';
             daySelect.value = '0';
-            colorSelect.value = 'blue'; '' : 'other-month'
-        } ">
-            < div class="month-date" > ${ date.getDate() }</div >
-                <div class="month-events">
-                    ${dayEvents.map(evt => `
-                        <div class="month-event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')"></div>    const daySelect = document.getElementById(`${ person } - day - select`);
-
-    const title = input.value.trim();
-    const dayOffset = parseInt(daySelect.value);
-
-    if (!title) return;
-
-    const date = new Date(currentWeekStart);
-    date.setDate(date.getDate() + dayOffset);
-    const dateStr = date.toISOString().split('T')[0];
-
-    try {
-        const response = await fetch(`/ api / chess / calendar / ${ person } / ${ dateStr }`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title,
-                id: Date.now().toString()
-            })
-        });
-
-        if (response.ok) {
-            input.value = '';
-            daySelect.value = '0';
+            colorSelect.value = 'blue';
             await loadCalendarEvents();
         }
     } catch (error) {
@@ -311,7 +342,7 @@ function renderMonthlyCalendar() {
 // Delete calendar event
 async function deleteCalendarEvent(person, dateStr, eventId) {
     try {
-        const response = await fetch(`/ api / chess / calendar / ${ person } / ${ dateStr } / ${ eventId }`, {
+        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}/${eventId}`, {
             method: 'DELETE'
         });
 
