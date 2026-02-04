@@ -53,6 +53,7 @@
                     <button class="todo-tab active" onclick="showTodoSection('hardware')">Hardware</button>
                     <button class="todo-tab" onclick="showTodoSection('software')">Software</button>
                     <button class="todo-tab" onclick="showTodoSection('internet')">Internet/Server</button>
+                    <button class="todo-tab" onclick="showTodoSection('misc')">Misc</button>
                 </div>
 
                 <!-- Hardware To-Do -->
@@ -83,6 +84,16 @@
                         <button onclick="addTask('internet')" class="btn-primary">Add Task</button>
                     </div>
                     <div id="internet-tasks" class="tasks-list"></div>
+                </div>
+
+                <!-- Misc To-Do -->
+                <div id="todo-misc" class="todo-section">
+                    <h3>📝 Misc Tasks</h3>
+                    <div class="todo-form">
+                        <input type="text" id="misc-task-input" placeholder="Add new misc task..." />
+                        <button onclick="addTask('misc')" class="btn-primary">Add Task</button>
+                    </div>
+                    <div id="misc-tasks" class="tasks-list"></div>
                 </div>
             </div>
         </section>
