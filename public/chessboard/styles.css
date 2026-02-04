@@ -1271,3 +1271,10 @@ body {
     min-width: 100px;
     text-align: right;
 }
+
+.api-placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
