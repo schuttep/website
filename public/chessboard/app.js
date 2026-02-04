@@ -138,8 +138,17 @@ function renderAllTasks() {
 let currentWeekStart = new Date();
 currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
 let calendarEvents = { group: {}, payton: {}, quinn: {}, danny: {} };
+let currentView = 'weekly';
+let currentMonth = new Date();
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const COLORS = {
+    blue: '#667eea',
+    red: '#f56565',
+    green: '#48bb78',
+    yellow: '#f6ad55',
+    purple: '#9f7aea'
+};
 
 // Load calendar events on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -193,44 +202,82 @@ function renderWeeklyCalendar() {
     renderCalendarForPerson('danny');
 }
 
-// Render calendar for specific person
-function renderCalendarForPerson(person) {
-    const container = document.getElementById(`${person}-calendar`);
-    let html = '<div class="days-grid">';
+// Switch view
+function switchView(view) {
+    currentView = view;
+    document.getElementById('weekly-btn').classList.remove('active');
+    document.getElementById('monthly-btn').classList.remove('active');
 
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(currentWeekStart);
-        date.setDate(date.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-        const dayName = WEEKDAYS[i];
-        const dayNum = date.getDate();
+    if (view === 'weekly') {
+        document.getElementById('weekly-btn').classList.add('active');
+        renderWeeklyCalendar();
+    } else {
+        document.getElementById('monthly-btn').classList.add('active');
+        renderMonthlyCalendar();
+    }
+}
+const dateStr = date.toISOString().split('T')[0];
+const dayName = WEEKDAYS[i];
+const dayNum = date.getDate();
 
-        const dayEvents = calendarEvents[person][dateStr] || [];
+const dayEvents = calendarEvents[person][dateStr] || [];
 
-        html += `
-            <div class="day-column">
-                <div class="day-header">${dayName}</div>
-                <div class="day-num">${dayNum}</div>
-                <div class="day-events">
-                    ${dayEvents.map(evt => `
-                        <div class="event-badge" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')">
-                            ${evt.title}
-                            <span class="delete-hint">✕</span>
-                        </div>
-                    `).join('')}
+<div class="event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')">
+    ${evt.title}
+    <span class="delete-hint">✕</span>
+</div>
+`).join('')}
                 </div>
             </div>
         `;
     }
 
-    html += '</div>';
-    container.innerHTML = html;
+html += '</div>';
+container.innerHTML = html;
 }
 
-// Add calendar event
-async function addCalendarEvent(person) {
-    const input = document.getElementById(`${person}-event-input`);
-    const daySelect = document.getElementById(`${person}-day-select`);
+// Render monthly calendar
+function renderMonthlyCalendar() {
+    const month = currentMonth.getMonth();
+    const year = currentMonth.getFullYear();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    document.getElementById('week-display').textContent = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const colorSelect = document.getElementById(`${person}-color-select`);
+
+    const title = input.value.trim();
+    const dayOffset = parseInt(daySelect.value);
+    const color = colorSelect.value;
+
+    if (!title) return;
+
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + dayOffset);
+    const dateStr = date.toISOString().split('T')[0];
+
+    try {
+        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                color,
+                id: Date.now().toString()
+            })
+        });
+
+        if (response.ok) {
+            input.value = '';
+            daySelect.value = '0';
+            colorSelect.value = 'blue'; '' : 'other-month'
+        } ">
+            < div class="month-date" > ${ date.getDate() }</div >
+                <div class="month-events">
+                    ${dayEvents.map(evt => `
+                        <div class="month-event-badge" style="background-color: ${COLORS[evt.color] || COLORS.blue}" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')"></div>    const daySelect = document.getElementById(`${ person } - day - select`);
 
     const title = input.value.trim();
     const dayOffset = parseInt(daySelect.value);
@@ -242,7 +289,7 @@ async function addCalendarEvent(person) {
     const dateStr = date.toISOString().split('T')[0];
 
     try {
-        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
+        const response = await fetch(`/ api / chess / calendar / ${ person } / ${ dateStr }`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -264,7 +311,7 @@ async function addCalendarEvent(person) {
 // Delete calendar event
 async function deleteCalendarEvent(person, dateStr, eventId) {
     try {
-        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}/${eventId}`, {
+        const response = await fetch(`/ api / chess / calendar / ${ person } / ${ dateStr } / ${ eventId }`, {
             method: 'DELETE'
         });
 

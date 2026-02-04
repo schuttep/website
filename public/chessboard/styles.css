@@ -825,12 +825,43 @@ body {
     align-items: center;
     margin-bottom: 2rem;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .calendar-controls h3 {
     margin: 0;
     min-width: 200px;
     text-align: center;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg);
+    padding: 0.5rem;
+    border-radius: 6px;
+}
+
+.view-btn {
+    background: white;
+    border: 2px solid var(--border);
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.2s;
+}
+
+.view-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.view-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 .calendar-group {
@@ -954,6 +985,74 @@ body {
 .event-form select:focus {
     outline: none;
     border-color: var(--primary);
+}
+
+.color-select {
+    min-width: 120px;
+}
+
+
+/* Monthly Calendar Styles */
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.month-day-header {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary);
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.month-day {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s;
+}
+
+.month-day:hover {
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.month-day.other-month {
+    background: var(--bg);
+    opacity: 0.5;
+}
+
+.month-date {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.month-events {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.month-event-badge {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.month-event-badge:hover {
+    transform: scale(1.3);
 }
 
 .event-form .btn-primary {
