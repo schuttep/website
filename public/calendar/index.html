@@ -27,6 +27,12 @@
                 <h2 id="month-year"></h2>
                 <button id="next-month" type="button" class="nav-btn">›</button>
             </div>
+            <div class="calendar-filters">
+                <span>Show:</span>
+                <button type="button" class="filter-btn active" data-filter="both">Both</button>
+                <button type="button" class="filter-btn" data-filter="A">A</button>
+                <button type="button" class="filter-btn" data-filter="P">P</button>
+            </div>
             <div class="calendar-weekdays">
                 <div class="weekday">Sun</div>
                 <div class="weekday">Mon</div>
@@ -70,6 +76,13 @@
                         <option value="biweekly">Bi-weekly</option>
                         <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
+                    </select>
+                </label>
+                <label>
+                    Owner
+                    <select id="owner" name="owner">
+                        <option value="A">A</option>
+                        <option value="P">P</option>
                     </select>
                 </label>
                 <label id="recurrence-end-label" style="display: none;">

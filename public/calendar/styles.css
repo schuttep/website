@@ -206,6 +206,37 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
+.calendar-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.filter-btn {
+    background: #1f2e48;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.filter-btn:hover {
+    border-color: var(--accent);
+}
+
 .calendar-header h2 {
     margin: 0;
     min-width: 200px;
@@ -327,4 +358,25 @@ body {
     padding: 2px 4px;
     border-radius: 4px;
     background: rgba(44, 107, 255, 0.1);
+}
+
+.owner-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 6px;
+    color: white;
+}
+
+.owner-a {
+    background: #4a9eff;
+}
+
+.owner-p {
+    background: #ed64a6;
 }

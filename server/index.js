@@ -436,7 +436,7 @@ app.get('/api/calendar/events', (req, res) => {
 });
 
 app.post('/api/calendar/events', (req, res) => {
-    const { title, date, time, notes, color, recurrence, recurrenceEndDate } = req.body;
+    const { title, date, time, notes, color, recurrence, recurrenceEndDate, owner } = req.body;
 
     if (!title || !date) {
         return res.status(400).json({ error: 'Title and date are required' });
@@ -451,6 +451,7 @@ app.post('/api/calendar/events', (req, res) => {
         color: color && /^#[0-9A-F]{6}$/i.test(color) ? color : '#2c6bff',
         recurrence: recurrence || 'none',
         recurrenceEndDate: recurrenceEndDate && recurrence !== 'none' ? recurrenceEndDate.trim() : '',
+        owner: owner === 'A' || owner === 'P' ? owner : 'A',
         createdAt: new Date()
     };
 
@@ -486,6 +487,9 @@ app.put('/api/calendar/events/:id', (req, res) => {
     }
     if (req.body.recurrenceEndDate !== undefined) {
         event.recurrenceEndDate = req.body.recurrenceEndDate.trim();
+    }
+    if (req.body.owner !== undefined && (req.body.owner === 'A' || req.body.owner === 'P')) {
+        event.owner = req.body.owner;
     }
 
     saveCalendarEvents();

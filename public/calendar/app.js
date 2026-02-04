@@ -11,6 +11,8 @@ const colorLabel = document.getElementById('color-label');
 const recurrenceInput = document.getElementById('recurrence');
 const recurrenceEndLabel = document.getElementById('recurrence-end-label');
 const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
+const ownerInput = document.getElementById('owner');
+const filterButtons = document.querySelectorAll('.filter-btn');
 
 const colorNames = {
     '#2c6bff': 'Blue',
@@ -25,6 +27,12 @@ const colorNames = {
 
 let currentDate = new Date();
 let allEvents = [];
+let ownerFilter = 'both';
+
+function matchesOwnerFilter(event) {
+    if (ownerFilter === 'both') return true;
+    return event.owner === ownerFilter;
+}
 
 function isEventOnDate(event, date) {
     const [eyear, emonth, eday] = event.date.split('-').map(Number);
@@ -125,7 +133,7 @@ function renderCalendar() {
         }
 
         const dateStr = date.toISOString().split('T')[0];
-        const dayEvents = allEvents.filter(e => isEventOnDate(e, date));
+        const dayEvents = allEvents.filter(e => isEventOnDate(e, date) && matchesOwnerFilter(e));
 
         const numberEl = document.createElement('div');
         numberEl.className = 'calendar-day-number';
@@ -169,7 +177,7 @@ function renderEvents(events) {
         return;
     }
 
-    const sorted = [...events].sort((a, b) => {
+    const sorted = [...events].filter(matchesOwnerFilter).sort((a, b) => {
         const dateA = `${a.date || ''} ${a.time || ''}`.trim();
         const dateB = `${b.date || ''} ${b.time || ''}`.trim();
         return dateA.localeCompare(dateB);
@@ -183,7 +191,11 @@ function renderEvents(events) {
         card.style.borderLeft = `4px solid ${event.color || '#2c6bff'}`;
 
         const title = document.createElement('h3');
-        title.textContent = event.title;
+        const ownerBadge = document.createElement('span');
+        ownerBadge.className = `owner-badge ${event.owner === 'P' ? 'owner-p' : 'owner-a'}`;
+        ownerBadge.textContent = event.owner || 'A';
+        title.appendChild(ownerBadge);
+        title.appendChild(document.createTextNode(event.title));
         title.style.color = event.color || '#2c6bff';
 
         const meta = document.createElement('div');
@@ -235,6 +247,7 @@ async function handleCreate(event) {
         colorLabel.textContent = 'Blue';
         recurrenceInput.value = 'none';
         recurrenceEndLabel.style.display = 'none';
+        ownerInput.value = 'A';
         await fetchEvents();
     } catch (error) {
         statusEl.textContent = error.message;
@@ -260,6 +273,15 @@ async function handleDelete(id) {
 form.addEventListener('submit', handleCreate);
 colorInput.addEventListener('change', () => {
     colorLabel.textContent = colorNames[colorInput.value] || 'Custom';
+});
+filterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        ownerFilter = button.dataset.filter;
+        renderCalendar();
+        renderEvents(allEvents);
+    });
 });
 recurrenceInput.addEventListener('change', () => {
     if (recurrenceInput.value !== 'none') {
