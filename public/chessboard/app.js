@@ -470,20 +470,21 @@ function renderMonthCalendarForPerson(person, startDate, year, month) {
 }
 
 // Add calendar event
-async function addCalendarEvent(person) {
-    const input = document.getElementById(`${person}-event-input`);
-    const daySelect = document.getElementById(`${person}-day-select`);
-    const colorSelect = document.getElementById(`${person}-color-select`);
+async function addCalendarEvent() {
+    const input = document.getElementById('calendar-event-input');
+    const dateInput = document.getElementById('calendar-date-input');
+    const personSelect = document.getElementById('calendar-person-select');
+    const colorSelect = document.getElementById('calendar-color-select');
 
     const title = input.value.trim();
-    const dayOffset = parseInt(daySelect.value);
+    const dateStr = dateInput.value;
+    const person = personSelect.value;
     const color = colorSelect.value;
 
-    if (!title) return;
-
-    const date = new Date(currentWeekStart);
-    date.setDate(date.getDate() + dayOffset);
-    const dateStr = date.toISOString().split('T')[0];
+    if (!title || !dateStr || !person) {
+        alert('Please fill in all fields including assignee');
+        return;
+    }
 
     try {
         const response = await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
@@ -498,7 +499,8 @@ async function addCalendarEvent(person) {
 
         if (response.ok) {
             input.value = '';
-            daySelect.value = '0';
+            dateInput.value = '';
+            personSelect.value = '';
             colorSelect.value = 'blue';
             await loadCalendarEvents();
         }

@@ -1088,17 +1088,31 @@ body {
     display: flex;
     gap: 0.75rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
 }
 
-.event-form input {
+.event-form input[type="text"] {
     flex: 1;
+    min-width: 150px;
     padding: 0.75rem;
     border: 2px solid var(--border);
     border-radius: 6px;
     font-size: 0.9rem;
 }
 
-.event-form input:focus {
+.event-form .event-date-input {
+    min-width: 150px;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #3a3a3a;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.event-form input:focus,
+.event-form .event-date-input:focus {
     outline: none;
     border-color: var(--primary);
 }

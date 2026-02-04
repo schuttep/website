@@ -147,108 +147,52 @@
                     </div>
                 </div>
 
-                <!-- Group Deadline Calendar -->
-                <div class="calendar-group">
-                    <h3>👥 Group Deadline</h3>
-                    <div class="weekly-calendar" id="group-calendar"></div>
+                <!-- Unified Event Form -->
+                <div class="unified-event-form">
+                    <h3>➕ Add Calendar Event</h3>
                     <div class="event-form">
-                        <input type="text" id="group-event-input" placeholder="Add group event..." />
-                        <select id="group-day-select">
-                            <option value="0">Sunday</option>
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                            <option value="6">Saturday</option>
+                        <input type="text" id="calendar-event-input" placeholder="Event title..." />
+                        <input type="date" id="calendar-date-input" class="event-date-input" />
+                        <select id="calendar-person-select" class="person-select">
+                            <option value="">Assign to...</option>
+                            <option value="group">👥 Group</option>
+                            <option value="payton">👤 Payton</option>
+                            <option value="quinn">👤 Quinn</option>
+                            <option value="danny">👤 Danny</option>
                         </select>
-                        <select id="group-color-select" class="color-select">
+                        <select id="calendar-color-select" class="color-select">
                             <option value="blue">🔵 Blue</option>
                             <option value="red">🔴 Red</option>
                             <option value="green">🟢 Green</option>
                             <option value="yellow">🟡 Yellow</option>
                             <option value="purple">🟣 Purple</option>
                         </select>
-                        <button onclick="addCalendarEvent('group')" class="btn-primary">Add</button>
+                        <button onclick="addCalendarEvent()" class="btn-primary">Add Event</button>
                     </div>
+                </div>
+
+                <!-- Group Deadline Calendar -->
+                <div class="calendar-group">
+                    <h3>👥 Group Deadline</h3>
+                    <div class="weekly-calendar" id="group-calendar"></div>
                 </div>
 
                 <!-- Payton Deadline Calendar -->
                 <div class="calendar-group">
                     <h3>👤 Payton Deadline</h3>
                     <div class="weekly-calendar" id="payton-calendar"></div>
-                    <div class="event-form">
-                        <input type="text" id="payton-event-input" placeholder="Add Payton event..." />
-                        <select id="payton-day-select">
-                            <option value="0">Sunday</option>
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                            <option value="6">Saturday</option>
-                        </select>
-                        <select id="payton-color-select" class="color-select">
-                            <option value="blue">🔵 Blue</option>
-                            <option value="red">🔴 Red</option>
-                            <option value="green">🟢 Green</option>
-                            <option value="yellow">🟡 Yellow</option>
-                            <option value="purple">🟣 Purple</option>
-                        </select>
-                        <button onclick="addCalendarEvent('payton')" class="btn-primary">Add</button>
-                    </div>
                 </div>
 
                 <!-- Quinn Deadline Calendar -->
                 <div class="calendar-group">
                     <h3>👤 Quinn Deadline</h3>
                     <div class="weekly-calendar" id="quinn-calendar"></div>
-                    <div class="event-form">
-                        <input type="text" id="quinn-event-input" placeholder="Add Quinn event..." />
-                        <select id="quinn-day-select">
-                            <option value="0">Sunday</option>
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                            <option value="6">Saturday</option>
-                        </select>
-                        <select id="quinn-color-select" class="color-select">
-                            <option value="blue">🔵 Blue</option>
-                            <option value="red">🔴 Red</option>
-                            <option value="green">🟢 Green</option>
-                            <option value="yellow">🟡 Yellow</option>
-                            <option value="purple">🟣 Purple</option>
-                        </select>
-                        <button onclick="addCalendarEvent('quinn')" class="btn-primary">Add</button>
-                    </div>
                 </div>
 
                 <!-- Danny Deadline Calendar -->
                 <div class="calendar-group">
                     <h3>👤 Danny Deadline</h3>
                     <div class="weekly-calendar" id="danny-calendar"></div>
-                    <div class="event-form">
-                        <input type="text" id="danny-event-input" placeholder="Add Danny event..." />
-                        <select id="danny-day-select">
-                            <option value="0">Sunday</option>
-                            <option value="1">Monday</option>
-                            <option value="2">Tuesday</option>
-                            <option value="3">Wednesday</option>
-                            <option value="4">Thursday</option>
-                            <option value="5">Friday</option>
-                            <option value="6">Saturday</option>
-                        </select>
-                        <select id="danny-color-select" class="color-select">
-                            <option value="blue">🔵 Blue</option>
-                            <option value="red">🔴 Red</option>
-                            <option value="green">🟢 Green</option>
-                            <option value="yellow">🟡 Yellow</option>
-                            <option value="purple">🟣 Purple</option>
-                        </select>
-                        <button onclick="addCalendarEvent('danny')" class="btn-primary">Add</button>
-                    </div>
                 </div>
             </div>
         </section>

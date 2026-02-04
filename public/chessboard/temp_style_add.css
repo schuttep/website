@@ -1,0 +1,17 @@
+.unified-event-form {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 2px solid var(--border);
+}
+
+.unified-event-form h3 {
+    margin-bottom: 1rem;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.person-select {
+    min-width: 140px;
+}
