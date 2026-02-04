@@ -1624,12 +1624,16 @@ app.post('/api/chess/tasks/:section', (req, res) => {
     const { section } = req.params;
     const task = req.body;
 
-    if (!['hardware', 'software', 'internet'].includes(section)) {
+    if (!['hardware', 'software', 'internet', 'misc'].includes(section)) {
         return res.status(400).json({ error: 'Invalid section' });
     }
 
     if (!chessProjectData.tasks) {
         chessProjectData.tasks = { hardware: [], software: [], internet: [], misc: [] };
+    }
+
+    if (!chessProjectData.tasks[section]) {
+        chessProjectData.tasks[section] = [];
     }
 
     chessProjectData.tasks[section].push(task);
