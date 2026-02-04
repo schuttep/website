@@ -1416,3 +1416,329 @@ app.listen(PORT, '0.0.0.0', async () => {
 
     console.log('AI Portfolio scheduled job configured (Fridays at 6 PM EST)');
 });
+
+// =============================================================================
+// CHESS BOARD PROJECT API
+// =============================================================================
+
+const chessProjectFile = path.join(__dirname, 'chessproject.json');
+
+function loadChessProject() {
+    try {
+        if (fs.existsSync(chessProjectFile)) {
+            return JSON.parse(fs.readFileSync(chessProjectFile, 'utf8'));
+        }
+    } catch (error) {
+        console.error('Error loading chess project data:', error);
+    }
+
+    return {
+        projectLinks: {
+            github: 'https://github.com',
+            drive: 'https://drive.google.com'
+        },
+        teamMembers: [],
+        availability: [],
+        projectEvents: [],
+        games: []
+    };
+}
+
+function saveChessProject() {
+    try {
+        fs.writeFileSync(chessProjectFile, JSON.stringify(chessProjectData, null, 2));
+    } catch (error) {
+        console.error('Error saving chess project data:', error);
+    }
+}
+
+let chessProjectData = loadChessProject();
+
+// Project Links
+app.get('/api/chess/project/links', (req, res) => {
+    res.json(chessProjectData.projectLinks);
+});
+
+app.put('/api/chess/project/links', (req, res) => {
+    if (req.body.github) chessProjectData.projectLinks.github = req.body.github;
+    if (req.body.drive) chessProjectData.projectLinks.drive = req.body.drive;
+    saveChessProject();
+    res.json(chessProjectData.projectLinks);
+});
+
+// Team Members
+app.get('/api/chess/team/members', (req, res) => {
+    res.json({ members: chessProjectData.teamMembers });
+});
+
+app.post('/api/chess/team/member', (req, res) => {
+    const { name, role } = req.body;
+    if (!name) {
+        return res.status(400).json({ error: 'Name is required' });
+    }
+
+    const member = {
+        id: uuidv4(),
+        name: name.trim(),
+        role: (role || 'Team Member').trim(),
+        addedAt: new Date().toISOString()
+    };
+
+    chessProjectData.teamMembers.push(member);
+    saveChessProject();
+    res.status(201).json(member);
+});
+
+app.delete('/api/chess/team/member/:id', (req, res) => {
+    const index = chessProjectData.teamMembers.findIndex(m => m.id === req.params.id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Member not found' });
+    }
+
+    const removed = chessProjectData.teamMembers.splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Member removed', member: removed[0] });
+});
+
+// Meeting Availability
+app.get('/api/chess/meeting/availability', (req, res) => {
+    res.json({ availability: chessProjectData.availability });
+});
+
+app.post('/api/chess/meeting/availability', (req, res) => {
+    const { name, date, timeFrom, timeTo } = req.body;
+
+    if (!name || !date || !timeFrom || !timeTo) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    const slot = {
+        name: name.trim(),
+        date,
+        timeFrom,
+        timeTo,
+        addedAt: new Date().toISOString()
+    };
+
+    chessProjectData.availability.push(slot);
+    saveChessProject();
+    res.status(201).json(slot);
+});
+
+app.delete('/api/chess/meeting/availability/:index', (req, res) => {
+    const index = parseInt(req.params.index);
+    if (index < 0 || index >= chessProjectData.availability.length) {
+        return res.status(404).json({ error: 'Availability not found' });
+    }
+
+    const removed = chessProjectData.availability.splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Availability removed', slot: removed[0] });
+});
+
+app.get('/api/chess/meeting/best-time', (req, res) => {
+    const availability = chessProjectData.availability;
+
+    if (availability.length === 0) {
+        return res.json({ bestTime: null });
+    }
+
+    // Group by date
+    const byDate = {};
+    availability.forEach(slot => {
+        if (!byDate[slot.date]) byDate[slot.date] = [];
+        byDate[slot.date].push(slot);
+    });
+
+    // Find date with most availability
+    let bestDate = null;
+    let maxCount = 0;
+
+    for (const date in byDate) {
+        if (byDate[date].length > maxCount) {
+            maxCount = byDate[date].length;
+            bestDate = date;
+        }
+    }
+
+    if (!bestDate || maxCount < 2) {
+        return res.json({ bestTime: null });
+    }
+
+    // Find overlapping time on best date
+    const slots = byDate[bestDate];
+    const members = slots.map(s => s.name);
+
+    // Simple overlap: use earliest start and latest end that overlaps
+    const times = slots.map(s => ({
+        from: s.timeFrom,
+        to: s.timeTo
+    }));
+
+    const latestStart = times.reduce((max, t) => t.from > max ? t.from : max, times[0].from);
+    const earliestEnd = times.reduce((min, t) => t.to < min ? t.to : min, times[0].to);
+
+    res.json({
+        bestTime: {
+            date: bestDate,
+            timeFrom: latestStart,
+            timeTo: earliestEnd,
+            members: members
+        }
+    });
+});
+
+// Project Events
+app.get('/api/chess/project/events', (req, res) => {
+    res.json({ events: chessProjectData.projectEvents });
+});
+
+app.post('/api/chess/project/event', (req, res) => {
+    const { title, date, time, notes } = req.body;
+
+    if (!title || !date) {
+        return res.status(400).json({ error: 'Title and date are required' });
+    }
+
+    const event = {
+        id: uuidv4(),
+        title: title.trim(),
+        date,
+        time: time || '',
+        notes: notes || '',
+        createdAt: new Date().toISOString()
+    };
+
+    chessProjectData.projectEvents.push(event);
+    saveChessProject();
+    res.status(201).json(event);
+});
+
+app.put('/api/chess/project/event/:id', (req, res) => {
+    const event = chessProjectData.projectEvents.find(e => e.id === req.params.id);
+
+    if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+    }
+
+    if (req.body.title) event.title = req.body.title.trim();
+    if (req.body.date) event.date = req.body.date;
+    if (req.body.time !== undefined) event.time = req.body.time;
+    if (req.body.notes !== undefined) event.notes = req.body.notes;
+
+    saveChessProject();
+    res.json(event);
+});
+
+app.delete('/api/chess/project/event/:id', (req, res) => {
+    const index = chessProjectData.projectEvents.findIndex(e => e.id === req.params.id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const removed = chessProjectData.projectEvents.splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Event deleted', event: removed[0] });
+});
+
+// Chess Game API Endpoints
+app.get('/api/chess/status', (req, res) => {
+    res.json({
+        status: 'online',
+        version: '1.0.0',
+        activeGames: chessProjectData.games.length
+    });
+});
+
+app.get('/api/chess/games', (req, res) => {
+    res.json({ games: chessProjectData.games });
+});
+
+app.post('/api/chess/game', (req, res) => {
+    const { player1, player2 } = req.body;
+
+    if (!player1 || !player2) {
+        return res.status(400).json({ error: 'Both players are required' });
+    }
+
+    const game = {
+        id: uuidv4(),
+        player1,
+        player2,
+        status: 'active',
+        moves: [],
+        board: initializeChessBoard(),
+        createdAt: new Date().toISOString(),
+        lastMove: null
+    };
+
+    chessProjectData.games.push(game);
+    saveChessProject();
+    res.status(201).json(game);
+});
+
+app.get('/api/chess/game/:gameId', (req, res) => {
+    const game = chessProjectData.games.find(g => g.id === req.params.gameId);
+
+    if (!game) {
+        return res.status(404).json({ error: 'Game not found' });
+    }
+
+    res.json(game);
+});
+
+app.post('/api/chess/move', (req, res) => {
+    const { gameId, from, to, piece } = req.body;
+
+    if (!gameId || !from || !to || !piece) {
+        return res.status(400).json({ error: 'gameId, from, to, and piece are required' });
+    }
+
+    const game = chessProjectData.games.find(g => g.id === gameId);
+
+    if (!game) {
+        return res.status(404).json({ error: 'Game not found' });
+    }
+
+    if (game.status !== 'active') {
+        return res.status(400).json({ error: 'Game is not active' });
+    }
+
+    const move = {
+        from,
+        to,
+        piece,
+        timestamp: new Date().toISOString(),
+        moveNumber: game.moves.length + 1
+    };
+
+    game.moves.push(move);
+    game.lastMove = new Date().toISOString();
+
+    saveChessProject();
+    res.json({ game, move });
+});
+
+app.delete('/api/chess/game/:gameId', (req, res) => {
+    const index = chessProjectData.games.findIndex(g => g.id === req.params.gameId);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Game not found' });
+    }
+
+    const removed = chessProjectData.games.splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Game ended', game: removed[0] });
+});
+
+function initializeChessBoard() {
+    return {
+        pieces: [],
+        currentTurn: 'white'
+    };
+}
+
+// =============================================================================
+// END CHESS BOARD PROJECT API
+// =============================================================================

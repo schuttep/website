@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Board Project - Team Hub</title>
+    <link rel="icon" type="image/png" href="/images/PortfolioLogo2_ff5f05.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-content">
+            <h1>♟️ Internet-Connected Chess Board Project</h1>
+            <nav class="header-nav">
+                <a href="/">Home</a>
+                <a href="/portfolio">Portfolio</a>
+                <a href="/calendar">Calendar</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Project Overview -->
+        <section class="card project-overview">
+            <h2>📋 Project Overview</h2>
+            <p>Building an internet-connected chess board with real-time game synchronization and remote play
+                capabilities.</p>
+            <div class="quick-links">
+                <a href="#" id="github-link" class="link-btn" target="_blank">
+                    <span class="icon">📦</span> GitHub Repository
+                </a>
+                <a href="#" id="drive-link" class="link-btn" target="_blank">
+                    <span class="icon">📁</span> Google Drive
+                </a>
+                <a href="#api-docs" class="link-btn">
+                    <span class="icon">🔧</span> API Documentation
+                </a>
+            </div>
+        </section>
+
+        <!-- Team Members -->
+        <section class="card team-section">
+            <h2>👥 Team Members</h2>
+            <div id="team-members" class="team-grid">
+                <!-- Team members will be populated here -->
+            </div>
+            <button id="add-member-btn" class="btn-primary">+ Add Team Member</button>
+        </section>
+
+        <!-- Meeting Scheduler -->
+        <section class="card meeting-scheduler">
+            <h2>📅 Meeting Scheduler</h2>
+            <p class="subtitle">Enter your availability to find the best meeting time</p>
+
+            <div class="scheduler-controls">
+                <div class="form-group">
+                    <label>Your Name:</label>
+                    <input type="text" id="member-name" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="availability-date">
+                </div>
+                <div class="form-group">
+                    <label>Available From:</label>
+                    <input type="time" id="time-from">
+                </div>
+                <div class="form-group">
+                    <label>Available Until:</label>
+                    <input type="time" id="time-to">
+                </div>
+                <button id="add-availability-btn" class="btn-primary">Add Availability</button>
+            </div>
+
+            <div class="availability-display">
+                <h3>Team Availability</h3>
+                <div id="availability-list"></div>
+                <button id="find-best-time-btn" class="btn-success">🎯 Find Best Meeting Time</button>
+                <div id="best-time-result"></div>
+            </div>
+        </section>
+
+        <!-- Project Calendar -->
+        <section class="card calendar-section">
+            <h2>📆 Project Calendar</h2>
+            <div class="calendar-header">
+                <button id="prev-month" class="nav-btn">‹</button>
+                <h3 id="month-year"></h3>
+                <button id="next-month" class="nav-btn">›</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+
+            <div class="event-form-container">
+                <h3 id="event-form-title">Add Project Event</h3>
+                <form id="event-form">
+                    <input type="text" id="event-title" placeholder="Event title" required>
+                    <input type="date" id="event-date" required>
+                    <input type="time" id="event-time">
+                    <textarea id="event-notes" placeholder="Notes (optional)" rows="3"></textarea>
+                    <div class="form-actions">
+                        <button type="submit" id="submit-event-btn">Add Event</button>
+                        <button type="button" id="cancel-event-btn" style="display: none;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="events-list" class="events-list"></div>
+        </section>
+
+        <!-- API Development Section -->
+        <section class="card api-section" id="api-docs">
+            <h2>🔧 API Development</h2>
+
+            <div class="api-status">
+                <div class="status-badge" id="api-status">
+                    <span class="status-dot"></span>
+                    <span>API Status: <span id="status-text">Loading...</span></span>
+                </div>
+            </div>
+
+            <div class="api-endpoints">
+                <h3>Available Endpoints</h3>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <code>/api/chess/games</code>
+                    </div>
+                    <p>Get all active chess games</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <code>/api/chess/game</code>
+                    </div>
+                    <p>Create a new chess game</p>
+                    <details>
+                        <summary>Request Body</summary>
+                        <pre>{ "player1": "string", "player2": "string" }</pre>
+                    </details>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <code>/api/chess/game/:gameId</code>
+                    </div>
+                    <p>Get game state by ID</p>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <code>/api/chess/move</code>
+                    </div>
+                    <p>Submit a chess move</p>
+                    <details>
+                        <summary>Request Body</summary>
+                        <pre>{ "gameId": "string", "from": "a2", "to": "a4", "piece": "pawn" }</pre>
+                    </details>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method delete">DELETE</span>
+                        <code>/api/chess/game/:gameId</code>
+                    </div>
+                    <p>End a chess game</p>
+                </div>
+            </div>
+
+            <div class="api-tester">
+                <h3>API Tester</h3>
+                <select id="test-endpoint">
+                    <option value="/api/chess/games">GET /api/chess/games</option>
+                    <option value="/api/chess/status">GET /api/chess/status</option>
+                </select>
+                <button id="test-api-btn" class="btn-primary">Test Endpoint</button>
+                <pre id="api-response"></pre>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
