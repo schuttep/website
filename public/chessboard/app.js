@@ -472,38 +472,52 @@ function renderMonthCalendarForPerson(person, startDate, year, month) {
 // Add calendar event
 async function addCalendarEvent() {
     const input = document.getElementById('calendar-event-input');
-    const dateInput = document.getElementById('calendar-date-input');
+    const startDateInput = document.getElementById('calendar-start-date-input');
+    const endDateInput = document.getElementById('calendar-end-date-input');
     const personSelect = document.getElementById('calendar-person-select');
     const colorSelect = document.getElementById('calendar-color-select');
 
     const title = input.value.trim();
-    const dateStr = dateInput.value;
+    const startDateStr = startDateInput.value;
+    const endDateStr = endDateInput.value;
     const person = personSelect.value;
     const color = colorSelect.value;
 
-    if (!title || !dateStr || !person) {
-        alert('Please fill in all fields including assignee');
+    if (!title || !startDateStr || !endDateStr || !person) {
+        alert('Please fill in all fields including assignee and date range');
+        return;
+    }
+
+    const startDate = new Date(startDateStr);
+    const endDate = new Date(endDateStr);
+
+    if (endDate < startDate) {
+        alert('End date must be on or after start date');
         return;
     }
 
     try {
-        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title,
-                color,
-                id: Date.now().toString()
-            })
-        });
-
-        if (response.ok) {
-            input.value = '';
-            dateInput.value = '';
-            personSelect.value = '';
-            colorSelect.value = 'blue';
-            await loadCalendarEvents();
+        const currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    color,
+                    id: Date.now().toString()
+                })
+            });
+            currentDate.setDate(currentDate.getDate() + 1);
         }
+
+        input.value = '';
+        startDateInput.value = '';
+        endDateInput.value = '';
+        personSelect.value = '';
+        colorSelect.value = 'blue';
+        await loadCalendarEvents();
     } catch (error) {
         console.error('Error adding event:', error);
     }

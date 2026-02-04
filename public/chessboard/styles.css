@@ -1134,6 +1134,10 @@ body {
     min-width: 120px;
 }
 
+.person-select {
+    min-width: 140px;
+}
+
 
 /* Monthly Calendar Styles */
 .month-grid {
