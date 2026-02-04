@@ -209,6 +209,39 @@
                 </div>
             </div>
         </section>
+
+        <!-- Parts List -->
+        <section class="card collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>🔧 Parts List</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="parts-form">
+                    <input type="text" id="part-name-input" placeholder="Part name..." />
+                    <button onclick="addPart()" class="btn-primary">Add Part</button>
+                </div>
+
+                <div class="parts-header">
+                    <div class="parts-fields-header">
+                        <span>Part Name</span>
+                        <span>Part ID</span>
+                        <span>Cost</span>
+                        <span>Amount</span>
+                        <span>Status</span>
+                        <span></span>
+                    </div>
+                    <div class="parts-total-header">Total</div>
+                </div>
+
+                <div id="parts-list-container"></div>
+
+                <div class="parts-footer">
+                    <span class="footer-label">Total Cost:</span>
+                    <span id="parts-total-cost" class="total-cost">$0.00</span>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script src="app.js"></script>

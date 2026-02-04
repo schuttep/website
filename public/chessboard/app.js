@@ -5,12 +5,16 @@ function toggleSection(headerElement) {
 }
 
 // To-Do List
-let tasks = { hardware: [], software: [], internet: [] };
+let tasks = { hardware: [], software: [], internet: [], misc: [] };
+
+// Parts List
+let parts = [];
 
 // Load tasks and calendar on page load
 document.addEventListener('DOMContentLoaded', async () => {
     await loadTasks();
     await loadCalendarEvents();
+    await loadParts();
     renderWeeklyCalendar();
 });
 
@@ -19,7 +23,7 @@ async function loadTasks() {
     try {
         const response = await fetch('/api/chess/tasks');
         const data = await response.json();
-        tasks = data.tasks || { hardware: [], software: [], internet: [] };
+        tasks = data.tasks || { hardware: [], software: [], internet: [], misc: [] };
         renderAllTasks();
     } catch (error) {
         console.error('Error loading tasks:', error);
@@ -135,6 +139,7 @@ function renderAllTasks() {
     renderTasks('hardware');
     renderTasks('software');
     renderTasks('internet');
+    renderTasks('misc');
 }
 
 // Weekly Calendar
@@ -351,5 +356,120 @@ async function deleteCalendarEvent(person, dateStr, eventId) {
         }
     } catch (error) {
         console.error('Error deleting event:', error);
+    }
+}
+
+// Parts List Functions
+async function loadParts() {
+    try {
+        const response = await fetch('/api/chess/parts');
+        const data = await response.json();
+        parts = data.parts || [];
+        renderPartsList();
+    } catch (error) {
+        console.error('Error loading parts:', error);
+    }
+}
+
+function renderPartsList() {
+    const container = document.getElementById('parts-list-container');
+
+    if (parts.length === 0) {
+        container.innerHTML = '<p class="no-parts">No parts yet. Add one above!</p>';
+        updateTotalCost();
+        return;
+    }
+
+    container.innerHTML = parts.map(part => `
+        <div class="part-row">
+            <div class="part-fields">
+                <input type="text" class="part-name" value="${part.name}" onchange="updatePart('${part.id}', 'name', this.value)" placeholder="Part Name" />
+                <input type="text" class="part-id" value="${part.partId}" onchange="updatePart('${part.id}', 'partId', this.value)" placeholder="Part ID" />
+                <input type="number" class="part-cost" value="${part.cost}" onchange="updatePart('${part.id}', 'cost', parseFloat(this.value))" placeholder="Cost" />
+                <input type="number" class="part-amount" value="${part.amountNeeded}" onchange="updatePart('${part.id}', 'amountNeeded', parseInt(this.value))" placeholder="Amount Needed" />
+                <label class="part-ordered">
+                    <input type="checkbox" ${part.ordered ? 'checked' : ''} onchange="updatePart('${part.id}', 'ordered', this.checked)" />
+                    <span>Ordered</span>
+                </label>
+                <button onclick="deletePart('${part.id}')" class="btn-delete-part">✕ Remove</button>
+            </div>
+            <div class="part-total">\$${(part.cost * part.amountNeeded).toFixed(2)}</div>
+        </div>
+    `).join('');
+
+    updateTotalCost();
+}
+
+async function addPart() {
+    const input = document.getElementById('part-name-input');
+    const name = input.value.trim();
+
+    if (!name) return;
+
+    const part = {
+        id: Date.now().toString(),
+        name,
+        partId: '',
+        cost: 0,
+        amountNeeded: 1,
+        ordered: false
+    };
+
+    try {
+        const response = await fetch('/api/chess/parts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(part)
+        });
+
+        if (response.ok) {
+            input.value = '';
+            await loadParts();
+        }
+    } catch (error) {
+        console.error('Error adding part:', error);
+    }
+}
+
+async function updatePart(partId, field, value) {
+    try {
+        const response = await fetch(`/api/chess/parts/${partId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ [field]: value })
+        });
+
+        if (response.ok) {
+            const part = parts.find(p => p.id === partId);
+            if (part) {
+                part[field] = value;
+                renderPartsList();
+            }
+        }
+    } catch (error) {
+        console.error('Error updating part:', error);
+    }
+}
+
+async function deletePart(partId) {
+    try {
+        const response = await fetch(`/api/chess/parts/${partId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            parts = parts.filter(p => p.id !== partId);
+            renderPartsList();
+        }
+    } catch (error) {
+        console.error('Error deleting part:', error);
+    }
+}
+
+function updateTotalCost() {
+    const total = parts.reduce((sum, part) => sum + (part.cost * part.amountNeeded), 0);
+    const totalElement = document.getElementById('parts-total-cost');
+    if (totalElement) {
+        totalElement.textContent = `$${total.toFixed(2)}`;
     }
 }

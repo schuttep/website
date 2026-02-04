@@ -1111,3 +1111,161 @@ body {
         flex-direction: column;
     }
 }
+
+/* Parts List */
+.parts-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.parts-form input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.parts-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.parts-fields-header {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 0.5fr;
+    gap: 0.75rem;
+    text-align: left;
+}
+
+.parts-total-header {
+    width: 120px;
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.part-row {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    align-items: center;
+}
+
+.part-fields {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr 0.5fr;
+    gap: 0.75rem;
+}
+
+.part-row input {
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.part-row input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.part-name {
+    font-weight: 500;
+}
+
+.part-id {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+.part-cost::before {
+    content: '$';
+}
+
+.part-amount {
+    text-align: center;
+}
+
+.part-ordered {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.part-ordered input {
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.btn-delete-part {
+    padding: 0.5rem 0.75rem;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.btn-delete-part:hover {
+    background: #e53e3e;
+}
+
+.part-total {
+    width: 120px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary);
+    padding-right: 1rem;
+    white-space: nowrap;
+}
+
+.no-parts {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem;
+    font-style: italic;
+}
+
+.parts-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border-top: 2px solid var(--border);
+    background: #f9fafb;
+    border-radius: 6px;
+}
+
+.footer-label {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.total-cost {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 100px;
+    text-align: right;
+}

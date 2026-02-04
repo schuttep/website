@@ -1721,6 +1721,59 @@ app.delete('/api/chess/calendar/:person/:date/:eventId', (req, res) => {
     res.json({ message: 'Event deleted', event: removed[0] });
 });
 
+// Parts API Endpoints
+app.get('/api/chess/parts', (req, res) => {
+    const parts = chessProjectData.parts || [];
+    res.json({ parts });
+});
+
+app.post('/api/chess/parts', (req, res) => {
+    const part = req.body;
+
+    if (!chessProjectData.parts) {
+        chessProjectData.parts = [];
+    }
+
+    chessProjectData.parts.push(part);
+    saveChessProject();
+    res.json({ message: 'Part added', part });
+});
+
+app.put('/api/chess/parts/:partId', (req, res) => {
+    const { partId } = req.params;
+    const updates = req.body;
+
+    if (!chessProjectData.parts) {
+        return res.status(404).json({ error: 'Part not found' });
+    }
+
+    const part = chessProjectData.parts.find(p => p.id === partId);
+    if (!part) {
+        return res.status(404).json({ error: 'Part not found' });
+    }
+
+    Object.assign(part, updates);
+    saveChessProject();
+    res.json({ message: 'Part updated', part });
+});
+
+app.delete('/api/chess/parts/:partId', (req, res) => {
+    const { partId } = req.params;
+
+    if (!chessProjectData.parts) {
+        return res.status(404).json({ error: 'Part not found' });
+    }
+
+    const index = chessProjectData.parts.findIndex(p => p.id === partId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Part not found' });
+    }
+
+    const removed = chessProjectData.parts.splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Part deleted', part: removed[0] });
+});
+
 // =============================================================================
 // END CHESS BOARD PROJECT API
 // =============================================================================
