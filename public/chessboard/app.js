@@ -16,23 +16,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCalendar();
 
     // Set GitHub and Drive links
-    loadProjectLinks();
-
-    // Show hardware section by default
-    document.querySelector('.dev-tab').click();
+    await loadProjectLinks();
 });
 
 // Project Links
-function loadProjectLinks() {
-    fetch('/api/chess/project/links')
-        .then(res => res.json())
-        .then(data => {
-            if (data.github) document.getElementById('github-link').href = data.github;
-            if (data.drive) document.getElementById('drive-link').href = data.drive;
-        })
-        .catch(() => {
-            // Use defaults or leave as #
-        });
+async function loadProjectLinks() {
+    try {
+        const res = await fetch('/api/chess/project/links');
+        const data = await res.json();
+        if (data.github) {
+            document.getElementById('github-link').href = data.github;
+        }
+        if (data.drive) {
+            document.getElementById('drive-link').href = data.drive;
+        }
+    } catch (error) {
+        console.error('Error loading project links:', error);
+    }
 }
 
 // Team Members Management
@@ -360,12 +360,19 @@ function toggleSection(headerElement) {
 }
 
 // Development Tabs
-function showDevSection(sectionName) {
+function showDevSection(sectionName, buttonElement) {
     // Update tab buttons
     document.querySelectorAll('.dev-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    event.target.classList.add('active');
+
+    // Find and activate the clicked button
+    const buttons = document.querySelectorAll('.dev-tab');
+    buttons.forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(sectionName)) {
+            btn.classList.add('active');
+        }
+    });
 
     // Update sections
     document.querySelectorAll('.dev-section').forEach(section => {

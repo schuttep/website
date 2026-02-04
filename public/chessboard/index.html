@@ -18,20 +18,25 @@
 
     <main class="container">
         <!-- Project Overview -->
-        <section class="card project-overview">
-            <h2>📋 Project Overview</h2>
-            <p>Building an internet-connected chess board with real-time game synchronization and remote play
-                capabilities.</p>
-            <div class="quick-links">
-                <a href="#" id="github-link" class="link-btn" target="_blank">
-                    <span class="icon">📦</span> GitHub Repository
-                </a>
-                <a href="#" id="drive-link" class="link-btn" target="_blank">
-                    <span class="icon">📁</span> Google Drive
-                </a>
-                <a href="#api-docs" class="link-btn">
-                    <span class="icon">🔧</span> API Documentation
-                </a>
+        <section class="card collapsible-section project-overview">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>📋 Project Overview</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <p>Building an internet-connected chess board with real-time game synchronization and remote play
+                    capabilities.</p>
+                <div class="quick-links">
+                    <a href="#" id="github-link" class="link-btn" target="_blank">
+                        <span class="icon">📦</span> GitHub Repository
+                    </a>
+                    <a href="#" id="drive-link" class="link-btn" target="_blank">
+                        <span class="icon">📁</span> Google Drive
+                    </a>
+                    <a href="#api-docs" class="link-btn">
+                        <span class="icon">🔧</span> API Documentation
+                    </a>
+                </div>
             </div>
         </section>
 
@@ -122,9 +127,9 @@
 
                 <!-- Development Subsections -->
                 <div class="development-tabs">
-                    <button class="dev-tab active" onclick="showDevSection('hardware')">Hardware</button>
-                    <button class="dev-tab" onclick="showDevSection('software')">Software</button>
-                    <button class="dev-tab" onclick="showDevSection('internet')">Internet/API</button>
+                    <button class="dev-tab active" onclick="showDevSection('hardware', this)">Hardware</button>
+                    <button class="dev-tab" onclick="showDevSection('software', this)">Software</button>
+                    <button class="dev-tab" onclick="showDevSection('internet', this)">Internet/API</button>
                 </div>
 
                 <!-- Hardware Section -->
