@@ -75,8 +75,12 @@ const stockNames = {
     'AVGO': 'Broadcom Inc.',
     'VOO': 'Vanguard S&P 500 ETF',
     'ZION': 'Zions Bancorporation',
+    'SPY': 'SPDR S&P 500 ETF',
+    'QQQ': 'Invesco QQQ Trust (Nasdaq-100)',
+    'VTI': 'Vanguard Total Stock Market ETF',
     'IEF': 'iShares 7-10 Year Treasury Bond ETF',
     'LQD': 'iShares iBoxx Investment Grade Corporate Bond ETF',
+    'BND': 'Vanguard Total Bond Market ETF',
     'GLD': 'SPDR Gold Trust'
 };
 
@@ -153,7 +157,7 @@ function loadAIPortfolio() {
         currentAllocation: {
             date: new Date().toISOString().split('T')[0],
             regime: 'Neutral',
-            weights: { SPY: 0.45, IEF: 0.35, LQD: 0.15, GLD: 0.05 },
+            weights: { SPY: 0.25, VOO: 0.10, QQQ: 0.10, IEF: 0.25, LQD: 0.15, BND: 0.10, GLD: 0.05 },
             indicators: { spyClose: 0, ma50: 0, ma200: 0, vol20: 0, dd63: 0 },
             reason: 'Initial allocation - Neutral regime as default starting point'
         },
@@ -164,15 +168,19 @@ function loadAIPortfolio() {
             currentNAV: 100000,
             positions: {
                 SPY: { shares: 0, value: 0 },
+                VOO: { shares: 0, value: 0 },
+                QQQ: { shares: 0, value: 0 },
+                VTI: { shares: 0, value: 0 },
                 IEF: { shares: 0, value: 0 },
                 LQD: { shares: 0, value: 0 },
+                BND: { shares: 0, value: 0 },
                 GLD: { shares: 0, value: 0 },
                 CASH: 100000
             },
             equityCurve: [],
             monthlyReturns: []
         },
-        priceHistory: { SPY: [], IEF: [], LQD: [], GLD: [] }
+        priceHistory: { SPY: [], VOO: [], QQQ: [], VTI: [], IEF: [], LQD: [], BND: [], GLD: [] }
     };
 }
 
@@ -222,8 +230,12 @@ const realStockPrices = {
     'AVGO': 178.92,
     'VOO': 524.67,
     'ZION': 52.34,
+    'SPY': 578.45,
+    'QQQ': 476.23,
+    'VTI': 287.34,
     'IEF': 96.45,
     'LQD': 112.83,
+    'BND': 72.18,
     'GLD': 189.76
 };
 
@@ -933,15 +945,15 @@ function determineRegime(spyPrices) {
 
 function getTargetWeights(regime) {
     const allocations = {
-        'Risk-On': { SPY: 0.70, IEF: 0.15, LQD: 0.10, GLD: 0.05 },
-        'Neutral': { SPY: 0.45, IEF: 0.35, LQD: 0.15, GLD: 0.05 },
-        'Risk-Off': { SPY: 0.20, IEF: 0.60, LQD: 0.10, GLD: 0.10 }
+        'Risk-On': { SPY: 0.35, VOO: 0.15, QQQ: 0.20, VTI: 0.10, IEF: 0.08, LQD: 0.07, BND: 0.03, GLD: 0.02 },
+        'Neutral': { SPY: 0.25, VOO: 0.10, QQQ: 0.10, VTI: 0.05, IEF: 0.25, LQD: 0.15, BND: 0.07, GLD: 0.03 },
+        'Risk-Off': { SPY: 0.10, VOO: 0.05, QQQ: 0.03, VTI: 0.02, IEF: 0.40, LQD: 0.15, BND: 0.15, GLD: 0.10 }
     };
     return allocations[regime] || allocations['Neutral'];
 }
 
 async function simulateRebalance(currentPositions, targetWeights, prices, transactionCost = 0.0005) {
-    const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+    const symbols = ['SPY', 'VOO', 'QQQ', 'VTI', 'IEF', 'LQD', 'BND', 'GLD'];
     const currentNAV = Object.keys(currentPositions).reduce((sum, symbol) => {
         return sum + (currentPositions[symbol].value || 0);
     }, 0) + (currentPositions.CASH || 0);
@@ -1007,6 +1019,57 @@ async function simulateRebalance(currentPositions, targetWeights, prices, transa
     };
 }
 
+// Sync AI Portfolio to Portfolio Manager
+function syncAIPortfolioToManager() {
+    try {
+        // Find or create AI Portfolio in portfolios list
+        let aiPortfolioIndex = portfolios.findIndex(p => p.id === 'ai-managed-portfolio');
+
+        // Get current positions and prices
+        const positions = aiPortfolioData.modelPerformance.positions;
+        const currentNAV = aiPortfolioData.modelPerformance.currentNAV;
+
+        // Convert positions to portfolio assets format
+        const assets = Object.entries(positions).map(([symbol, pos]) => {
+            const currentPrice = pos.value / pos.shares;
+            const purchasePrice = currentPrice; // Using current as we don't track individual purchases
+
+            return {
+                id: `ai-${symbol.toLowerCase()}`,
+                symbol: symbol,
+                name: stockNames[symbol] || symbol,
+                quantity: Math.round(pos.shares * 100) / 100,
+                purchasePrice: Math.round(purchasePrice * 100) / 100,
+                currentPrice: Math.round(currentPrice * 100) / 100,
+                totalValue: Math.round(pos.value * 100) / 100,
+                currency: 'USD',
+                purchaseDate: aiPortfolioData.currentAllocation.date || new Date().toISOString(),
+                addedAt: new Date().toISOString()
+            };
+        }).filter(asset => asset.quantity > 0);
+
+        const aiPortfolio = {
+            id: 'ai-managed-portfolio',
+            name: '🤖 AI Managed Portfolio',
+            totalValue: Math.round(currentNAV * 100) / 100,
+            assets: assets,
+            createdAt: aiPortfolioData.modelPerformance.equityCurve[0]?.date || new Date().toISOString(),
+            isAIManaged: true
+        };
+
+        if (aiPortfolioIndex >= 0) {
+            portfolios[aiPortfolioIndex] = aiPortfolio;
+        } else {
+            portfolios.push(aiPortfolio);
+        }
+
+        savePortfolios();
+        console.log('AI Portfolio synced to Portfolio Manager');
+    } catch (error) {
+        console.error('Failed to sync AI Portfolio:', error);
+    }
+}
+
 // API Endpoints
 
 // Get current allocation
@@ -1056,7 +1119,7 @@ app.get('/api/ai-portfolio/model/rebalance/:date', (req, res) => {
 // Manual trigger for rebalance (for testing)
 app.post('/api/ai-portfolio/rebalance', async (req, res) => {
     try {
-        const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+        const symbols = ['SPY', 'VOO', 'QQQ', 'VTI', 'IEF', 'LQD', 'BND', 'GLD'];
 
         // Fetch latest prices
         const prices = {};
@@ -1125,6 +1188,9 @@ app.post('/api/ai-portfolio/rebalance', async (req, res) => {
         // Save to disk
         saveAIPortfolio();
 
+        // Sync to Portfolio Manager
+        syncAIPortfolioToManager();
+
         res.json({
             message: 'Rebalance completed',
             allocation: newAllocation,
@@ -1180,7 +1246,7 @@ app.listen(PORT, '0.0.0.0', async () => {
     cron.schedule('0 18 * * 5', async () => {
         console.log('Running scheduled AI portfolio rebalance...');
         try {
-            const symbols = ['SPY', 'IEF', 'LQD', 'GLD'];
+            const symbols = ['SPY', 'VOO', 'QQQ', 'VTI', 'IEF', 'LQD', 'BND', 'GLD'];
 
             // Fetch latest prices
             const prices = {};
@@ -1240,6 +1306,9 @@ app.listen(PORT, '0.0.0.0', async () => {
 
                 aiPortfolioData.currentAllocation = newAllocation;
                 saveAIPortfolio();
+
+                // Sync to Portfolio Manager
+                syncAIPortfolioToManager();
 
                 console.log(`Scheduled rebalance completed. Regime: ${regime}, NAV: $${rebalanceResult.navAfter.toLocaleString()}`);
             } else {
