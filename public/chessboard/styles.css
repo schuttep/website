@@ -766,12 +766,12 @@ body {
 
 .task-item.in-progress {
     border-left-color: var(--warning);
-    background: #fffbf0;
+    background: #4a3f1a;
 }
 
 .task-item.done {
     border-left-color: var(--success);
-    background: #f0fdf4;
+    background: #1a3a2a;
 }
 
 .task-item.done .task-text {
