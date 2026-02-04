@@ -9,7 +9,7 @@ function App() {
     const [serverStatus, setServerStatus] = useState(null);
     const [portfolios, setPortfolios] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [shutdownLoading, setShutdownLoading] = useState(false);
+    const [updateLoading, setUpdateLoading] = useState(false);
     const [selectedPortfolioId, setSelectedPortfolioId] = useState(null);
 
     useEffect(() => {
@@ -89,19 +89,18 @@ function App() {
         return { amount: gainLoss, percentage };
     };
 
-    const handleShutdown = async () => {
-        if (window.confirm('Are you sure you want to terminate the servers? You will need to restart them manually.')) {
-            setShutdownLoading(true);
-            try {
-                await axios.post(`${API_BASE_URL}/api/shutdown`);
-                // After calling shutdown, wait a moment then show that servers are stopping
-                setTimeout(() => {
-                    alert('Servers are shutting down. Press Ctrl+C in the terminal to complete the process if needed.');
-                }, 200);
-            } catch (error) {
-                console.error('Error shutting down:', error);
-                alert('Servers may have already shut down. Press Ctrl+C in the terminal to stop the dev process.');
+    const handleUpdatePrices = async () => {
+        setUpdateLoading(true);
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/refresh-prices`);
+            if (response.data?.portfolios) {
+                setPortfolios(response.data.portfolios);
             }
+        } catch (error) {
+            console.error('Error updating prices:', error);
+            alert('Failed to update stock prices. Please try again.');
+        } finally {
+            setUpdateLoading(false);
         }
     };
 
@@ -110,14 +109,20 @@ function App() {
             <header className="App-header">
                 <div className="header-content">
                     <h1>Portfolio Manager</h1>
-                    <button
-                        className="terminate-btn"
-                        onClick={handleShutdown}
-                        disabled={shutdownLoading}
-                        title="Terminate development servers (dev only)"
-                    >
-                        {shutdownLoading ? 'Shutting down...' : 'Terminate Servers'}
-                    </button>
+                    <div className="header-actions">
+                        <nav className="header-links">
+                            <a href="/">Main Site</a>
+                            <a href="/calendar">Calendar</a>
+                        </nav>
+                        <button
+                            className="update-btn"
+                            onClick={handleUpdatePrices}
+                            disabled={updateLoading}
+                            title="Refresh all stock prices"
+                        >
+                            {updateLoading ? 'Updating...' : 'Update Stocks'}
+                        </button>
+                    </div>
                 </div>
             </header>
             <main className="App-main">
