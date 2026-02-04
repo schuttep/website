@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Website - Windows 95 Style</title>
+    <style>
+        /* Windows 95 Classic Theme */
+        body {
+            font-family: 'MS Sans Serif', 'Arial', sans-serif;
+            background-color: #008080;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background-image: url('https://i.imgur.com/7QbIUKx.png');
+            background-repeat: repeat;
+        }
+
+        .window {
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            padding: 3px;
+            margin: 20px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1084d0);
+            color: white;
+            padding: 3px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-bar-text {
+            padding-left: 20px;
+            background-image: url('https://i.imgur.com/9R8ZTzl.png');
+            background-repeat: no-repeat;
+            background-position: left center;
+        }
+
+        .title-bar-controls {
+            display: flex;
+        }
+
+        .title-bar-button {
+            width: 16px;
+            height: 14px;
+            margin-left: 2px;
+            background-color: #c0c0c0;
+            border: 1px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            font-size: 8px;
+            line-height: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .window-body {
+            padding: 10px;
+            border: 1px solid #808080;
+            margin-top: 3px;
+        }
+
+        .tab-control {
+            display: flex;
+            margin-bottom: -1px;
+        }
+
+        .tab {
+            padding: 3px 10px;
+            background-color: #c0c0c0;
+            border: 1px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+            margin-right: 3px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+        }
+
+        .button {
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #808080 #808080 #dfdfdf;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-family: 'MS Sans Serif', 'Arial', sans-serif;
+            font-size: 12px;
+        }
+
+        .button:active {
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #808080;
+            margin: 10px 0;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 32px;
+            text-align: center;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .icon img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .icon-label {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .start-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #c0c0c0;
+            border-top: 2px solid #dfdfdf;
+            display: flex;
+            justify-content: space-between;
+            padding: 2px;
+            z-index: 1000;
+        }
+
+        .start-button {
+            background: linear-gradient(90deg, #000080, #1084d0);
+            color: white;
+            padding: 2px 6px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .start-button img {
+            margin-right: 5px;
+        }
+
+        .clock {
+            padding: 2px 6px;
+            border: 1px solid;
+            border-color: #808080 #dfdfdf #dfdfdf #808080;
+        }
+
+        .desktop-icon {
+            position: absolute;
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .desktop-icon img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .desktop-icon-label {
+            font-size: 12px;
+            margin-top: 5px;
+            color: white;
+            text-shadow: 1px 1px 1px black;
+        }
+
+        /* Content styles */
+        h2 {
+            color: #000080;
+            border-bottom: 1px solid #808080;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .project,
+        .hobby,
+        .family-member {
+            background-color: white;
+            border: 1px solid #808080;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Desktop Icons -->
+    <div class="desktop-icon" style="left: 20px; top: 20px;">
+        <img src="https://i.imgur.com/9R8ZTzl.png" alt="My Computer">
+        <div class="desktop-icon-label">My Website</div>
+    </div>
+
+    <div class="desktop-icon" style="left: 20px; top: 80px;">
+        <img src="https://i.imgur.com/9R8ZTzl.png" alt="Projects">
+        <div class="desktop-icon-label">Projects</div>
+    </div>
+
+    <!-- Main Window -->
+    <div class="window" style="width: 80%; max-width: 800px; margin: 40px auto;">
+        <div class="title-bar">
+            <div class="title-bar-text">My Personal Website</div>
+            <div class="title-bar-controls">
+                <button class="title-bar-button">-</button>
+                <button class="title-bar-button">□</button>
+                <button class="title-bar-button">X</button>
+            </div>
+        </div>
+        <div class="window-body">
+            <div class="tab-control">
+                <div class="tab active">About Me</div>
+                <div class="tab">Education</div>
+                <div class="tab">Projects</div>
+                <div class="tab">Hobbies</div>
+                <div class="tab">Family</div>
+            </div>
+
+            <div id="about" class="tab-content">
+                <h2>About Me</h2>
+                <p>Welcome to my Windows 95-style personal website! I'm [Your Name], a [Your Year] student at [Your
+                    University].</p>
+
+                <div style="display: flex; align-items: center; margin: 20px 0;">
+                    <img src="https://via.placeholder.com/100" alt="My Photo"
+                        style="border: 2px solid #808080; margin-right: 20px;">
+                    <div>
+                        <p><strong>Name:</strong> [Your Full Name]</p>
+                        <p><strong>Major:</strong> [Your Major]</p>
+                        <p><strong>Interests:</strong> [Brief list of interests]</p>
+                    </div>
+                </div>
+
+                <button class="button">View My Resume</button>
+            </div>
+
+            <div id="education" class="tab-content" style="display: none;">
+                <h2>My Major</h2>
+                <p>I'm currently studying <strong>[Your Major]</strong> at [Your University].</p>
+                <p>This program focuses on [describe your major] and prepares students for careers in [related fields].
+                </p>
+
+                <h3>Current Classes</h3>
+                <ul>
+                    <li>[Class Name 1] - [Brief description]</li>
+                    <li>[Class Name 2] - [Brief description]</li>
+                    <li>[Class Name 3] - [Brief description]</li>
+                </ul>
+
+                <h3>Completed Notable Classes</h3>
+                <ul>
+                    <li>[Class Name] - [What you learned]</li>
+                    <li>[Class Name] - [What you learned]</li>
+                </ul>
+            </div>
+
+            <div id="projects" class="tab-content" style="display: none;">
+                <h2>My Projects</h2>
+
+                <div class="project">
+                    <h3>[Project Name 1]</h3>
+                    <p><strong>Date:</strong> [Month Year]</p>
+                    <p><strong>Technologies:</strong> [List technologies used]</p>
+                    <p>[Detailed description of the project and your role]</p>
+                    <button class="button">View Project</button>
+                </div>
+
+                <div class="project">
+                    <h3>[Project Name 2]</h3>
+                    <p><strong>Date:</strong> [Month Year]</p>
+                    <p><strong>Technologies:</strong> [List technologies used]</p>
+                    <p>[Detailed description of the project and your role]</p>
+                    <button class="button">View Project</button>
+                </div>
+            </div>
+
+            <div id="hobbies" class="tab-content" style="display: none;">
+                <h2>My Hobbies</h2>
+
+                <div class="hobby">
+                    <h3>[Hobby 1]</h3>
+                    <p>[Description of the hobby and why you enjoy it]</p>
+                    <p>[Any special achievements or experiences]</p>
+                </div>
+
+                <div class="hobby">
+                    <h3>[Hobby 2]</h3>
+                    <p>[Description of the hobby and why you enjoy it]</p>
+                    <p>[Any special achievements or experiences]</p>
+                </div>
+            </div>
+
+            <div id="family" class="tab-content" style="display: none;">
+                <h2>My Family</h2>
+                <p>[Brief introduction about your family]</p>
+
+                <div class="family-member">
+                    <h3>[Family Member 1]</h3>
+                    <p><strong>Relationship:</strong> [Mother/Father/Sibling/etc.]</p>
+                    <p>[Description and what they mean to you]</p>
+                </div>
+
+                <div class="family-member">
+                    <h3>[Family Member 2]</h3>
+                    <p><strong>Relationship:</strong> [Mother/Father/Sibling/etc.]</p>
+                    <p>[Description and what they mean to you]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Bar -->
+    <div class="start-bar">
+        <div class="start-button">
+            <img src="https://i.imgur.com/9R8ZTzl.png" width="16" height="16" alt="Start">
+            Start
+        </div>
+        <div class="clock">
+            [Current Time]
+        </div>
+    </div>
+
+    <script>
+        // Simple tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+                // Add active class to clicked tab
+                tab.classList.add('active');
+
+                // Show corresponding content
+                const tabId = tab.textContent.toLowerCase().replace(' ', '-');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.querySelector('.clock').textContent = timeString;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Window controls (minimize/maximize/close would need more complex implementation)
+        document.querySelectorAll('.title-bar-button').forEach((button, index) => {
+            button.addEventListener('click', () => {
+                if (index === 2) { // Close button
+                    alert('Window would close here in a real implementation');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

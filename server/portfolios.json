@@ -1,0 +1,53 @@
+[
+  {
+    "id": "7c939285-501d-4c70-b4dd-594bfc253023",
+    "name": "Merrill Portfolio",
+    "totalValue": 3194.24,
+    "assets": [
+      {
+        "id": "029ef245-ad00-4299-af64-74d4e3371b62",
+        "symbol": "AVGO",
+        "name": "AVGO",
+        "quantity": 8,
+        "purchasePrice": 345.45,
+        "currentPrice": 297.33,
+        "totalValue": 2378.64,
+        "currency": "USD",
+        "purchaseDate": "2025-09-18T00:00:00.000Z",
+        "addedAt": "2026-02-04T01:40:39.762Z"
+      },
+      {
+        "id": "b8b36d7a-35f3-46b4-bb75-47973d61fdea",
+        "symbol": "VOO",
+        "name": "VOO",
+        "quantity": 2,
+        "purchasePrice": 608.94,
+        "currentPrice": 342.09,
+        "totalValue": 684.18,
+        "currency": "USD",
+        "purchaseDate": "2025-09-18T00:00:00.000Z",
+        "addedAt": "2026-02-04T01:40:48.200Z"
+      },
+      {
+        "id": "5bfd6c14-7378-4764-b63b-34427b63b73c",
+        "symbol": "ZION",
+        "name": "ZION",
+        "quantity": 1,
+        "purchasePrice": 59.15,
+        "currentPrice": 131.42,
+        "totalValue": 131.42,
+        "currency": "USD",
+        "purchaseDate": "2025-09-18T00:00:00.000Z",
+        "addedAt": "2026-02-04T01:41:00.586Z"
+      }
+    ],
+    "createdAt": "2026-02-04T01:38:51.236Z"
+  },
+  {
+    "id": "b88ab773-93a3-42b4-913d-3df8e9520d8e",
+    "name": "LLM Managed Portfolio",
+    "totalValue": 0,
+    "assets": [],
+    "createdAt": "2026-02-04T01:59:32.595Z"
+  }
+]

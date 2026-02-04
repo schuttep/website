@@ -1,0 +1,150 @@
+:root {
+    color-scheme: light;
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --text: #1c2430;
+    --muted: #5b6472;
+    --accent: #2c6bff;
+    --accent-dark: #1f4fe0;
+    --border: #e1e5ee;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.site-header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+}
+
+.header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.header-nav a {
+    text-decoration: none;
+    color: var(--muted);
+    margin-left: 16px;
+    font-weight: 600;
+}
+
+.header-nav a:hover {
+    color: var(--accent);
+}
+
+.container {
+    max-width: 1000px;
+    margin: 32px auto 80px;
+    padding: 0 24px;
+    display: grid;
+    gap: 24px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(28, 36, 48, 0.08);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.event-form {
+    display: grid;
+    gap: 16px;
+}
+
+.event-form label {
+    display: grid;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.event-form input,
+.event-form textarea {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 15px;
+}
+
+.event-form button,
+.section-header button,
+.event-actions button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.event-form button:hover,
+.section-header button:hover,
+.event-actions button:hover {
+    background: var(--accent-dark);
+}
+
+.status {
+    margin: 16px 0;
+    color: var(--muted);
+}
+
+.events {
+    display: grid;
+    gap: 16px;
+}
+
+.event {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: grid;
+    gap: 8px;
+}
+
+.event h3 {
+    margin: 0;
+}
+
+.event-meta {
+    color: var(--muted);
+}
+
+.event-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.event-actions button.delete {
+    background: #e04848;
+}
+
+.event-actions button.delete:hover {
+    background: #b93535;
+}

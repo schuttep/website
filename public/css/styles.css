@@ -1,0 +1,660 @@
+:root {
+    --illini-blue: #13294B;
+    /* Illinois Blue */
+    --illini-blue-900: #0F2140;
+    /* Darker variant for surfaces */
+    --illini-orange: #FF5F05;
+    /* Illinois Orange */
+    --white: #FFFFFF;
+    /* Side column width */
+    --side-col: 120px;
+    /* Column top/base heights relative to width */
+    --col-top-h: calc(var(--side-col) * 1.1);
+    --col-bot-h: calc(var(--side-col) * 1.1);
+    /* Crop percentages of the original image height (no % sign) */
+    --col-top-pct: 25;
+    --col-bot-pct: 22;
+    /* Footer band height (set via JS) */
+    --footer-h: 0px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Prevent any horizontal overflow from full-width overlays */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Basic styling */
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    color: var(--white);
+    background: var(--illini-blue);
+    /* Make space for fixed side columns */
+    padding-left: var(--side-col);
+    padding-right: var(--side-col);
+    /* Establish positioning context for scroll-following side columns */
+    position: relative;
+}
+
+/* Three-part side columns */
+.side {
+    position: absolute;
+    /* scrolls with page */
+    top: 0;
+    bottom: 0;
+    /* full document height */
+    width: var(--side-col);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.side-left {
+    left: 0;
+}
+
+.side-right {
+    right: 0;
+}
+
+.side .col-top,
+.side .col-mid,
+.side .col-bot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background-position: center top;
+    background-size: 100% auto;
+    /* scale to width, preserve aspect ratio */
+}
+
+.side .col-top {
+    top: 0;
+    height: var(--col-top-h);
+    background-repeat: no-repeat;
+    /* image set via JS crop */
+}
+
+.side .col-bot {
+    bottom: 0;
+    height: var(--col-bot-h);
+    background-repeat: no-repeat;
+    /* image set via JS crop */
+    background-position: center bottom;
+}
+
+.side .col-mid {
+    top: var(--col-top-h);
+    bottom: var(--col-bot-h);
+    background-repeat: repeat-y;
+    /* repeating tile set via JS crop */
+}
+
+/* Full-screen hero adjusted for banners */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--illini-blue);
+    color: var(--white);
+    padding: 2rem;
+    box-sizing: border-box;
+    z-index: 1;
+    /* above side columns */
+    margin: 0 auto;
+    /* ensure hero touches top of page */
+}
+
+/* Block I top-left */
+.hero-block-i {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    left: auto;
+    width: 140px;
+    height: auto;
+    z-index: 2;
+}
+
+.hero-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 2.25rem;
+    max-width: 1600px;
+    width: 100%;
+    align-items: center;
+}
+
+.rotate-ccw {
+    transform: rotate(-90deg);
+    transform-origin: center;
+}
+
+.hero-logo {
+    position: absolute;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: auto;
+}
+
+/* Place logo above greeting when nested inside hero-text */
+.hero-text .hero-logo {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: none;
+    display: block;
+    margin: 0 auto 0.75rem;
+    width: 200px;
+    height: auto;
+}
+
+/* Center hero text block and content */
+.hero-text {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.hero-text h1 {
+    font-size: 2.4rem;
+    margin: 0 0 0.75rem 0;
+}
+
+.hero-text p {
+    font-size: 1.05rem;
+    margin: 0.25rem 0;
+    opacity: 0.95;
+}
+
+.hero-photo {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: min(96vh, 1400px);
+    justify-self: center;
+    border-radius: 14px;
+    border: 4px solid var(--illini-orange);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    background: #fff;
+    display: block;
+}
+
+/* About layout */
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.about-photo {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    border: 4px solid var(--illini-orange);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    background: #fff;
+    justify-self: center;
+}
+
+.profile-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid var(--illini-orange);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    margin-bottom: 1rem;
+    background: #fff;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+nav {
+    background-color: transparent;
+    /* background moved to ::before to span columns */
+    padding: 1rem;
+    position: relative;
+    z-index: 2;
+    /* ensure nav content is clickable above other layers */
+}
+
+nav::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(-1 * var(--side-col));
+    right: calc(-1 * var(--side-col));
+    background: var(--illini-blue-900);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    z-index: 0;
+    /* behind nav content */
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    /* above ::before band */
+}
+
+nav li {
+    margin: 0 1rem;
+}
+
+nav a {
+    color: var(--white);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+}
+
+nav a:hover {
+    color: var(--white);
+    background: var(--illini-orange);
+}
+
+section {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 2rem auto 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Full-width bands that overlay side columns for specific sections */
+#about::before,
+#projects::before,
+#classes::before,
+#experience::before,
+#skills::before,
+#resume::before,
+#Personal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(-1 * var(--side-col));
+    right: calc(-1 * var(--side-col));
+    background: var(--illini-blue-900);
+    border-radius: 12px;
+    z-index: -1;
+    /* behind section content, above columns (section has z-index:1) */
+}
+
+h2 {
+    color: var(--white);
+    border-bottom: 2px solid var(--illini-orange);
+    padding-bottom: 0.5rem;
+}
+
+.project,
+.hobby,
+.family-member {
+    background-color: var(--illini-blue-900);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+/* Experience items styled like projects */
+.experience-item {
+    background-color: var(--illini-blue-900);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 1.25rem 1.2rem;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.experience-item:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.experience-item h3 {
+    margin: 0 0 .25rem 0;
+}
+
+.experience-meta {
+    opacity: 0.85;
+    font-size: 0.95rem;
+    margin-bottom: .5rem;
+}
+
+/* Skills badges */
+.skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem .6rem;
+}
+
+.skill-badge {
+    background: rgba(255, 95, 5, 0.15);
+    border: 1px solid var(--illini-orange);
+    color: var(--white);
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    font-size: .95rem;
+    line-height: 1;
+}
+
+/* Resume preview */
+.resume-actions {
+    margin-top: 1rem;
+}
+
+.resume-embed {
+    margin-top: 1rem;
+    width: 100%;
+    height: 520px;
+    border: 2px solid var(--illini-orange);
+    border-radius: 10px;
+    background: #0c1b33;
+}
+
+.project:hover,
+.hobby:hover,
+.family-member:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Hobbies image gallery */
+.hobby-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+    margin-top: 0.75rem;
+}
+
+.hobby-gallery figure {
+    margin: 0;
+}
+
+.hobby-gallery img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 3px solid var(--illini-orange);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    background: #fff;
+    display: block;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.hobby-gallery img:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hobby-gallery figcaption {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin-top: 0.35rem;
+    text-align: center;
+}
+
+/* Lightbox (image modal) */
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    /* above nav/sections/columns */
+    padding: 2rem;
+    /* removed backdrop-filter for performance */
+}
+
+.lightbox-overlay.open {
+    display: flex;
+}
+
+.lightbox-content {
+    position: relative;
+    max-width: min(92vw, 1400px);
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    /* helps letterboxing */
+}
+
+.lightbox-img {
+    display: block;
+    max-width: 100%;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    background: #000;
+}
+
+.lightbox-caption {
+    color: #eee;
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* removed backdrop-filter for performance */
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.lightbox-close:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* Cursor hint for expandable images */
+.expandable {
+    cursor: zoom-in;
+}
+
+/* Lock scroll when lightbox is open */
+body.lb-open {
+    overflow: hidden;
+}
+
+/* Buttons */
+.resume-btn {
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 0.7rem 1.5rem;
+    background: var(--illini-orange);
+    color: var(--white);
+    font-weight: bold;
+    border: none;
+    border-radius: 24px;
+    font-size: 1.1rem;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.resume-btn:hover {
+    background: #ff5a2f;
+    color: var(--white);
+    transform: translateY(-2px) scale(1.04);
+}
+
+/* Links */
+a {
+    color: var(--illini-orange);
+}
+
+a:hover {
+    opacity: 0.9;
+}
+
+footer {
+    background-color: transparent;
+    /* background moved to ::before to span columns */
+    color: var(--white);
+    text-align: center;
+    padding: 1.5rem 0 1rem 0;
+    margin-top: 3rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+    position: relative;
+    z-index: 3;
+    /* above columns */
+}
+
+/* Footer social links */
+.social-links {
+    margin-top: 0.75rem;
+    display: inline-flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--illini-orange);
+    border-radius: 10px;
+    background: rgba(255, 95, 5, 0.12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.social-link:hover {
+    transform: translateY(-2px) scale(1.05);
+    background: rgba(255, 95, 5, 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.social-link img {
+    width: 28px;
+    height: 28px;
+    display: block;
+}
+
+/* Full-width footer band under columns */
+body::after {
+    content: "";
+    position: absolute;
+    left: calc(-1 * var(--side-col));
+    right: calc(-1 * var(--side-col));
+    bottom: 0;
+    height: var(--footer-h);
+    background: var(--illini-blue-900);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.25);
+    z-index: -1;
+    /* under columns (z-index:0) and content */
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    :root {
+        --side-col: 80px;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    nav li {
+        margin: 0.5rem 0;
+    }
+
+    .hero-inner {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1.25rem;
+    }
+
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+
+    .hero-logo {
+        width: 96px;
+    }
+
+    .hero-photo {
+        width: 100%;
+        height: auto;
+        max-height: min(90vh, 900px);
+    }
+
+    .hero-block-i {
+        width: 100px;
+    }
+}
+
+/* Tablet/smaller laptops */
+@media (max-width: 900px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .about-photo {
+        max-width: 420px;
+    }
+}

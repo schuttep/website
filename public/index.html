@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payton Schutte</title>
+    <meta name="description"
+        content="Portfolio website for Payton Schutte, Computer Engineering student at UIUC. Explore projects, classes, hobbies, and more.">
+    <meta name="keywords" content="Payton Schutte, Portfolio, Computer Engineering, UIUC, Projects, Resume, Hobbies">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="Payton Schutte Portfolio">
+    <meta property="og:description" content="Explore my academic journey, projects, and interests.">
+    <meta property="og:url" content="https://schuttep.github.io/">
+    <meta property="og:image"
+        content="https://ui-avatars.com/api/?name=Payton+Schutte&background=13294B&color=E84A27&size=256">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Payton Schutte Portfolio">
+    <meta name="twitter:description" content="Explore my academic journey, projects, and interests.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Side columns split into top/mid/bottom. Images will be cropped from column.png via JS -->
+    <div class="side side-left" aria-hidden="true">
+        <div class="col-top"></div>
+        <div class="col-mid"></div>
+        <div class="col-bot"></div>
+    </div>
+    <div class="side side-right" aria-hidden="true">
+        <div class="col-top"></div>
+        <div class="col-mid"></div>
+        <div class="col-bot"></div>
+    </div>
+    <section class="hero" aria-label="Introduction">
+        <img src="images/theI3.jpg" alt="Illinois Block I" class="hero-block-i" loading="lazy" decoding="async" />
+        <div class="hero-inner">
+            <div class="hero-text">
+                <img src="images/PortfolioLogo2_ff5f05.png" alt="Payton Schutte logo" class="hero-logo" loading="lazy"
+                    decoding="async" />
+                <h1>Hello, I am Payton Schutte.</h1>
+                <p>Senior in Computer Engineering at the</p>
+                <p>University of Illinois Urbana-Champaign's</p>
+                <p>Grainger College of Engineering.</p>
+            </div>
+            <div class="hero-media">
+                <img src="images/DSC00665.JPG" alt="Photo of Payton Schutte" class="hero-photo rotate-ccw expandable"
+                    fetchpriority="high" decoding="async" />
+            </div>
+        </div>
+    </section>
+
+    <nav aria-label="Main navigation">
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#classes">Classes</a></li>
+            <li><a href="#resume">Resume</a></li>
+            <li><a href="#Personal">Personal</a></li>
+            <li><a href="/portfolio">Portfolio Planner</a></li>
+            <li><a href="/calendar">Calendar</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="about">
+            <h2>About Me</h2>
+            <div class="about-grid">
+                <div class="about-text">
+                    <p>I’m a computer engineer passionate about applying AI to solve real-world engineering
+                        challenges.
+                        My work spans deep learning, RISC-V system design, operating system development, and
+                        performance
+                        optimization of high-frequency trading systems. I’ve built projects ranging from geospatial
+                        image classification and Siamese neural networks to AI-powered QA systems, combining
+                        hands-on
+                        coding with model deployment. I enjoy tackling complex technical problems and exploring how
+                        AI
+                        can bridge low-level engineering with intelligent applications.</p>
+                    <p>Outside of work, I climb and restore old technology, which keeps me persistent and creatively
+                        engaged. I expand on these hobbies in the <a href="#Personal">Personal</a> section below.
+                    </p>
+                </div>
+                <div class="about-media">
+                    <!-- optional: add an about photo or timeline -->
+                </div>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Projects</h2>
+            <div class="project">
+                <h3>Siamese Neural Network for One-Shot Image Recognition</h3>
+                <p><strong>Description:</strong> Developed a Siamese Neural Network in a single Jupyter Notebook to
+                    perform one-shot image recognition, based on Koch et
+                    al. (2015). Engineered a deep learning model to generate discriminative embeddings for image
+                    similarity tasks, trained
+                    with contrastive loss on paired inputs, and evaluated using classification metrics and embedding
+                    visualizations.
+                    Demonstrated applications like identity verification and one-shot learning scenarios.</p>
+                <p><strong>Technologies Used:</strong> Python, TensorFlow/Keras, NumPy, Matplotlib</p>
+                <p><strong>Skills Gained:</strong></p>
+                <ul>
+                    <li>Deep learning</li>
+                    <li>Contrastive loss</li>
+                    <li>Embedding visualization</li>
+                    <li>One-shot learning applications</li>
+                </ul>
+                <a class="resume-btn" href="https://github.com/schuttep/Siamese-Network" target="_blank"
+                    rel="noopener">View on GitHub</a>
+            </div>
+
+            <div class="project">
+                <h3>AI RAG Assistant Using LangChain</h3>
+                <p><strong>Date:</strong> September 2025</p>
+                <p><strong>Description:</strong> PDF QA app built with IBM watsonx.ai, LangChain, Chroma, and Gradio.
+                    Users can upload PDFs and ask questions; the system retrieves relevant chunks and generates grounded
+                    answers.</p>
+                <p><strong>Technologies Used:</strong> IBM watsonx.ai, LangChain, Chroma, Gradio</p>
+                <p><strong>Skills Gained:</strong></p>
+                <ul>
+                    <li>Retrieval Augmented Generation (RAG)</li>
+                    <li>LangChain orchestration</li>
+                    <li>IBM watsonx LLM + embeddings integration</li>
+                    <li>Gradio app deployment</li>
+                    <li>Document chunking & vector databases</li>
+                </ul>
+                <a class="resume-btn" href="https://github.com/schuttep/AI-RAG-Assistant-Using-LangChain"
+                    target="_blank" rel="noopener">View on
+                    GitHub</a>
+            </div>
+        </section>
+
+        <section id="experience">
+            <h2>Experience</h2>
+            <div class="experience-item">
+                <h3>Software Engineering Intern — JamSystems</h3>
+                <div class="experience-meta">Remote • June 2025 – Present</div>
+                <ul>
+                    <li>Engineered and benchmarked low-latency C++ data structures for high-frequency trading
+                        systems,
+                        achieving 1.7×–3× speedups over standard library implementations.</li>
+                    <li>Optimized performance-critical code paths and prepared AI model retraining on the codebase
+                        to
+                        improve automated code understanding.</li>
+                </ul>
+                <p><strong>Tools:</strong> C++, AI/ML workflows</p>
+            </div>
+            <div class="experience-item">
+                <h3>Software Validation Intern — NXP Semiconductors</h3>
+                <div class="experience-meta">San Diego, CA • May 2024 – August 2024</div>
+                <ul>
+                    <li>Conducted 100+ stability tests across multiple platforms for NFC hardware/software releases.
+                    </li>
+                    <li>Automated 30+ previously manual test cases using Python, JCShell, and robotic testing
+                        frameworks.</li>
+                    <li>Modified test cases to meet evolving customer requirements, improving testing efficiency and
+                        coverage.</li>
+                </ul>
+                <p><strong>Tools:</strong> Python, JCShell, automated testing frameworks</p>
+            </div>
+        </section>
+
+        <section id="skills">
+            <h2>Skills / Tech Stack</h2>
+            <div class="skills-grid">
+                <span class="skill-badge">LangChain</span>
+                <span class="skill-badge">PyTorch</span>
+                <span class="skill-badge">Keras</span>
+                <span class="skill-badge">TensorFlow</span>
+                <span class="skill-badge">Python</span>
+                <span class="skill-badge">C/C++</span>
+                <span class="skill-badge">Java</span>
+                <span class="skill-badge">FPGA</span>
+                <span class="skill-badge">Linux</span>
+                <span class="skill-badge">RISC-V</span>
+                <span class="skill-badge">Git</span>
+                <span class="skill-badge">GDB</span>
+                <span class="skill-badge">Oscilloscope</span>
+                <span class="skill-badge">Soldering</span>
+                <span class="skill-badge">Circuit Design</span>
+                <span class="skill-badge">SystemVerilog</span>
+                <span class="skill-badge">Microsoft Office Suite</span>
+            </div>
+        </section>
+
+        <section id="classes">
+            <h2>Relevant Classes</h2>
+            <ul>
+                <li><strong>Applied Machine Learning:</strong> Practical ML techniques, including
+                    supervised/unsupervised learning, neural networks, and model deployment using Python, PyTorch,
+                    and
+                    TensorFlow.</li>
+                <li><strong>Applied Parallel Programming:</strong> Parallel computing concepts and implementation,
+                    covering multi-threading, GPU programming, and performance optimization.</li>
+                <li><strong>Data Structures:</strong> Core data structures and algorithms, emphasizing efficient
+                    data
+                    storage, retrieval, and manipulation.</li>
+                <li><strong>Computer Systems Engineering:</strong> Low-level systems design, including operating
+                    systems, RISC-V architecture, memory management, I/O devices, and system calls.</li>
+                <li><strong>Principles of Safe Autonomy:</strong> Design of reliable autonomous systems with focus
+                    on
+                    verification, reachability analysis, and safety-critical principles.</li>
+                <li><strong>Power Circuits & Electromechanics:</strong> Electric circuits, machines, and
+                    electromechanical systems, including power conversion, motors, and generators.</li>
+                <li><strong>Digital Systems Laboratory:</strong> Hands-on design and testing of digital circuits
+                    using
+                    FPGAs, Verilog, and embedded systems integration.</li>
+            </ul>
+        </section>
+
+        <section id="resume">
+            <h2>Resume / CV</h2>
+            <div class="resume-actions">
+                <a class="resume-btn" href="SchutteResume25.pdf" target="_blank" rel="noopener">Download PDF</a>
+            </div>
+            <!-- Optional embedded preview (can comment out if not desired) -->
+            <iframe class="resume-embed" src="SchutteResume25.pdf" title="Resume preview" loading="lazy"></iframe>
+        </section>
+
+        <section id="Personal">
+            <h2>Personal</h2>
+            <div class="project">
+                <h3>Hobbies</h3>
+                <p>In my free time, I love exploring and restoring old technology, like fixing Sony Walkmans or
+                    working
+                    on an IBM Selectric 3. I’m also passionate about film photography and vinyl records. When I’m
+                    not in
+                    the workshop, you’ll find me climbing, surfing, spearfishing, camping, or hiking.</p>
+                <div class="hobby-gallery">
+                    <figure>
+                        <img src="images/IMG_1610.jpeg" alt="Restored Sony Walkman" class="expandable" loading="lazy"
+                            decoding="async">
+                        <figcaption>Hawaii Summit</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_2103.jpeg" alt="IBM Selectric 3 typewriter restoration" class="expandable"
+                            loading="lazy" decoding="async">
+                        <figcaption>Walkmans</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_2399.jpeg" alt="35mm film photograph" class="expandable" loading="lazy"
+                            decoding="async">
+                        <figcaption>Hometown Beach</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_3697.jpeg" alt="Vinyl records and turntable" class="expandable"
+                            loading="lazy" decoding="async">
+                        <figcaption> Early Surfing</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_3137.jpeg" alt="Vinyl records and turntable" class="expandable"
+                            loading="lazy" decoding="async">
+                        <figcaption>Surfing</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_1291.jpeg" alt="Vinyl records and turntable" class="expandable"
+                            loading="lazy" decoding="async">
+                        <figcaption>Spear Fishing</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_6412.jpeg" alt="Outdoor rock climbing" class="expandable" loading="lazy"
+                            decoding="async">
+                        <figcaption>Climbing</figcaption>
+                    </figure>
+                    <figure>
+                        <img src="images/IMG_4696.jpeg" alt="Surfing at the beach" class="expandable" loading="lazy"
+                            decoding="async">
+                        <figcaption>Hiking</figcaption>
+                    </figure>
+                </div>
+            </div>
+            <!-- <div class="project">
+                    <h3>Family</h3>
+                    <p>[Optional note about family or personal inspiration.]</p>
+                </div> -->
+        </section>
+        <!-- Add more hobbies as needed -->
+    </main>
+
+    <footer>
+        <p>Contact me at: <a href="mailto:paytonschutte34@gmail.com"
+                style="color: var(--illini-orange);">paytonschutte34@gmail.com</a></p>
+        <div class="social-links">
+            <a class="social-link" href="https://github.com/schuttep" target="_blank" rel="noopener"
+                aria-label="GitHub">
+                <img src="images/githubSym.png" alt="" loading="lazy" decoding="async" width="28" height="28" />
+            </a>
+            <a class="social-link" href="https://www.linkedin.com/in/paytonschutte" target="_blank" rel="noopener"
+                aria-label="LinkedIn">
+                <img src="images/linkedinLogo.png" alt="" loading="lazy" decoding="async" width="28" height="28" />
+            </a>
+        </div>
+    </footer>
+    <!-- Lightbox overlay for image enlargement -->
+    <div class="lightbox-overlay" id="lightbox" aria-hidden="true" role="dialog" aria-label="Image preview">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="lightboxClose" aria-label="Close preview">×</button>
+            <img class="lightbox-img" id="lightboxImg" alt="Expanded preview" />
+            <div class="lightbox-caption" id="lightboxCaption" hidden></div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            const root = document.documentElement;
+            const styles = getComputedStyle(root);
+            const topPct = parseFloat(styles.getPropertyValue('--col-top-pct')) || 25;
+            const botPct = parseFloat(styles.getPropertyValue('--col-bot-pct')) || 22;
+
+            const img = new Image();
+            img.src = 'images/column.png';
+            img.decode?.().catch(() => { }).finally(() => {
+                const w = img.naturalWidth;
+                const h = img.naturalHeight;
+                if (!w || !h) return;
+                const topH = Math.max(1, Math.round(h * topPct / 100));
+                const botH = Math.max(1, Math.round(h * botPct / 100));
+                const midH = Math.max(1, h - topH - botH);
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap DPR to 2 for perf
+                function cropToURL(sx, sy, sw, sh) {
+                    const c = document.createElement('canvas');
+                    c.width = Math.max(1, Math.round(sw / dpr));
+                    c.height = Math.max(1, Math.round(sh / dpr));
+                    const ctx = c.getContext('2d');
+                    ctx.imageSmoothingQuality = 'medium';
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+                    return c.toDataURL('image/webp', 0.85);
+                }
+
+                const produceSlices = () => {
+                    const urlTop = cropToURL(0, 0, w, topH);
+                    const urlMid = cropToURL(0, topH, w, midH);
+                    const urlBot = cropToURL(0, h - botH, w, botH);
+
+                    // Apply backgrounds
+                    document.querySelectorAll('.side .col-top').forEach(el => {
+                        el.style.backgroundImage = `url('${urlTop}')`;
+                        el.style.backgroundSize = '100% auto';
+                        el.style.backgroundPosition = 'center top';
+                        el.style.backgroundRepeat = 'no-repeat';
+                    });
+
+                    document.querySelectorAll('.side .col-mid').forEach(el => {
+                        el.style.backgroundImage = `url('${urlMid}')`;
+                        el.style.backgroundSize = '100% auto';
+                        el.style.backgroundPosition = 'center top';
+                        el.style.backgroundRepeat = 'repeat-y';
+                    });
+
+                    document.querySelectorAll('.side .col-bot').forEach(el => {
+                        el.style.backgroundImage = `url('${urlBot}')`;
+                        el.style.backgroundSize = '100% auto';
+                        el.style.backgroundPosition = 'center bottom';
+                        el.style.backgroundRepeat = 'no-repeat';
+                    });
+
+                    // Ensure no gaps by matching displayed heights to slice aspect ratios
+                    function applySliceHeights() {
+                        document.querySelectorAll('.side').forEach(side => {
+                            const sideW = Math.round(side.getBoundingClientRect().width);
+                            if (!sideW) return;
+                            const topDisp = Math.round(sideW * (topH / w));
+                            const botDisp = Math.round(sideW * (botH / w));
+                            const topEl = side.querySelector('.col-top');
+                            const midEl = side.querySelector('.col-mid');
+                            const botEl = side.querySelector('.col-bot');
+                            if (topEl) topEl.style.height = topDisp + 'px';
+                            if (botEl) botEl.style.height = botDisp + 'px';
+                            if (midEl) {
+                                midEl.style.top = topDisp + 'px';
+                                midEl.style.bottom = botDisp + 'px';
+                                // Nudge to avoid subpixel seams
+                                midEl.style.backgroundPosition = 'center 0px';
+                            }
+                        });
+                    }
+
+                    applySliceHeights();
+                    window.addEventListener('resize', applySliceHeights);
+                };
+
+                // Defer slice production to idle time to avoid blocking first render
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(produceSlices, { timeout: 100 });
+                } else {
+                    setTimeout(produceSlices, 0);
+                }
+            });
+            // If the image fails to load, we leave sides empty gracefully.
+        })();
+    </script>
+    <script>
+        // Sync the footer band height to the actual footer height
+        (function () {
+            function setFooterHeight() {
+                const footer = document.querySelector('footer');
+                if (!footer) return;
+                const h = Math.ceil(footer.getBoundingClientRect().height);
+                document.documentElement.style.setProperty('--footer-h', h + 'px');
+            }
+            window.addEventListener('load', setFooterHeight);
+            window.addEventListener('resize', setFooterHeight);
+            // Mutation observer in case footer content changes dynamically
+            const footer = document.querySelector('footer');
+            if (footer && 'MutationObserver' in window) {
+                const mo = new MutationObserver(setFooterHeight);
+                mo.observe(footer, { childList: true, subtree: true, characterData: true });
+            }
+        })();
+    </script>
+    <script>
+        // Lightbox behavior for expandable images
+        (function () {
+            const overlay = document.getElementById('lightbox');
+            const imgEl = document.getElementById('lightboxImg');
+            const captionEl = document.getElementById('lightboxCaption');
+            const closeBtn = document.getElementById('lightboxClose');
+
+            function openLightbox(src, alt, captionText) {
+                if (!overlay || !imgEl) return;
+                imgEl.src = src;
+                imgEl.alt = alt || 'Expanded image';
+                if (captionEl) {
+                    if (captionText) {
+                        captionEl.textContent = captionText;
+                        captionEl.hidden = false;
+                    } else {
+                        captionEl.textContent = '';
+                        captionEl.hidden = true;
+                    }
+                }
+                overlay.classList.add('open');
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('lb-open');
+            }
+
+            function closeLightbox() {
+                if (!overlay) return;
+                overlay.classList.remove('open');
+                overlay.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('lb-open');
+                if (imgEl) {
+                    imgEl.src = '';
+                }
+            }
+
+            // Click to open from expandable images
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (!(target instanceof Element)) return;
+                if (target.matches('img.expandable')) {
+                    const figure = target.closest('figure');
+                    const captionText = figure ? (figure.querySelector('figcaption')?.textContent || '') : '';
+                    openLightbox(target.src, target.alt, captionText);
+                }
+            });
+
+            // Close interactions
+            if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+            if (overlay) overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeLightbox();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeLightbox();
+            });
+        })();
+    </script>
+</body>
+
+</html>

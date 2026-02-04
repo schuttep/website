@@ -1,0 +1,18 @@
+{
+    "name": "portfolio-manager",
+    "version": "1.0.0",
+    "description": "A full-stack portfolio manager application",
+    "private": true,
+    "scripts": {
+        "dev": "concurrently \"npm run server:dev\" \"npm run client\"",
+        "server:dev": "cd server && npm run dev",
+        "server": "cd server && npm start",
+        "client": "cd client && npm start",
+        "build": "npm run build --prefix client",
+        "install-all": "npm install && npm install --prefix server && npm install --prefix client"
+    },
+    "dependencies": {
+        "concurrently": "^8.2.2"
+    },
+    "devDependencies": {}
+}

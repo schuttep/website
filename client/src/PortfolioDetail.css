@@ -1,0 +1,350 @@
+.portfolio-detail {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 2rem;
+}
+
+.portfolio-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.portfolio-detail-header h2 {
+    margin: 0;
+    color: #667eea;
+    font-size: 2rem;
+}
+
+.portfolio-total {
+    margin: 0.5rem 0 0 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.portfolio-total::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #28a745;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.stocks-section {
+    margin-top: 2rem;
+}
+
+.stocks-section h3 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.stocks-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.stock-item:hover {
+    background-color: #f0f8ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stock-details {
+    flex: 1;
+}
+
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.stock-header h4 {
+    margin: 0;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.remove-stock-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.remove-stock-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
+.stock-name {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.stock-stats {
+    display: flex;
+    gap: 2rem;
+    margin-left: 2rem;
+    text-align: right;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 100px;
+}
+
+.stat-label {
+    color: #999;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.stat.highlight .stat-value {
+    color: #28a745;
+    font-size: 1.2rem;
+}
+
+.stat.gain-loss {
+    min-width: 140px;
+}
+
+.stat.gain-loss.gain .stat-value {
+    color: #28a745;
+    font-weight: 700;
+}
+
+.stat.gain-loss.loss .stat-value {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.refresh-prices-btn {
+    background-color: #667eea;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.refresh-prices-btn:hover:not(:disabled) {
+    background-color: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.refresh-prices-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.purchase-date-section {
+    margin: 0.3rem 0 0 0;
+}
+
+.purchase-date p {
+    margin: 0.3rem 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-date-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    margin-left: 0.5rem;
+    border-radius: 3px;
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+
+.edit-date-btn:hover {
+    background-color: #5568d3;
+    transform: scale(1.05);
+}
+
+.date-edit-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.date-input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.date-save-btn,
+.date-cancel-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-save-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.date-save-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.date-save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.date-cancel-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.date-cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+.edit-price-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    margin-left: 0.5rem;
+    border-radius: 3px;
+    opacity: 1;
+    transition: all 0.2s ease;
+}
+
+.edit-price-btn:hover {
+    background-color: #5568d3;
+    transform: scale(1.05);
+}
+
+.price-edit-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.price-input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    width: 100px;
+}
+
+.price-save-btn,
+.price-cancel-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.price-save-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.price-save-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.price-save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.price-cancel-btn {
+    background-color: #6c757d;
+    color: white;
+}
+
+.price-cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+.no-stocks {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+    .stock-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .stock-stats {
+        margin-left: 0;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "ignore": [
+        "portfolios.json"
+    ],
+    "ext": "js,json"
+}
