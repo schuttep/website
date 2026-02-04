@@ -1616,7 +1616,7 @@ function initializeChessBoard() {
 
 // Task Management API Endpoints
 app.get('/api/chess/tasks', (req, res) => {
-    const tasks = chessProjectData.tasks || { hardware: [], software: [], internet: [] };
+    const tasks = chessProjectData.tasks || { hardware: [], software: [], internet: [], misc: [] };
     res.json({ tasks });
 });
 
@@ -1629,7 +1629,7 @@ app.post('/api/chess/tasks/:section', (req, res) => {
     }
 
     if (!chessProjectData.tasks) {
-        chessProjectData.tasks = { hardware: [], software: [], internet: [] };
+        chessProjectData.tasks = { hardware: [], software: [], internet: [], misc: [] };
     }
 
     chessProjectData.tasks[section].push(task);
