@@ -70,7 +70,10 @@ const stockNames = {
     'SPOT': 'Spotify Technology',
     'COIN': 'Coinbase Global Inc.',
     'GME': 'GameStop Corp.',
-    'GOOG': 'Alphabet Inc.'
+    'GOOG': 'Alphabet Inc.',
+    'AVGO': 'Broadcom Inc.',
+    'VOO': 'Vanguard S&P 500 ETF',
+    'ZION': 'Zions Bancorporation'
 };
 
 // Persistent storage for portfolios
@@ -160,7 +163,10 @@ const realStockPrices = {
     'SPOT': 156.89,
     'COIN': 118.45,
     'GME': 28.67,
-    'GOOG': 140.32
+    'GOOG': 140.32,
+    'AVGO': 178.92,
+    'VOO': 524.67,
+    'ZION': 52.34
 };
 
 // Function to get historical stock price for a specific date
@@ -312,14 +318,10 @@ async function getStockPrice(symbol) {
         if (price) {
             source = 'database';
             console.log(`Using database price for ${upperSymbol}: $${price}`);
+        } else {
+            // If not in database, throw error instead of using random price
+            throw new Error(`Stock ${upperSymbol} not found in database or APIs`);
         }
-    }
-
-    // Last resort: random realistic price
-    if (!price) {
-        price = parseFloat((Math.random() * 500 + 20).toFixed(2));
-        source = 'random';
-        console.log(`Using fallback random price for ${upperSymbol}: $${price}`);
     }
 
     const stockData = {
