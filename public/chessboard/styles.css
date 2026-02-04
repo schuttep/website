@@ -520,6 +520,132 @@ body {
     overflow-y: auto;
 }
 
+/* Collapsible Sections */
+.collapsible-section .section-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    padding: 0.5rem 0;
+}
+
+.collapsible-section .section-header:hover {
+    color: var(--primary);
+}
+
+.collapsible-section .section-header h2 {
+    margin: 0;
+}
+
+.toggle-icon {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.collapsible-section.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.section-content {
+    max-height: 5000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+}
+
+.collapsible-section.collapsed .section-content {
+    max-height: 0;
+    opacity: 0;
+}
+
+/* Development Tabs */
+.development-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.dev-tab {
+    background: none;
+    border: none;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.dev-tab:hover {
+    color: var(--primary);
+}
+
+.dev-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* Development Sections */
+.dev-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.dev-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dev-content {
+    margin-top: 1rem;
+}
+
+.dev-content textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    resize: vertical;
+}
+
+.dev-content textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.saved-notes {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.saved-notes:empty {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .header-content h1 {
         font-size: 1.25rem;

@@ -9,14 +9,17 @@ let editingEventId = null;
 
 // Load initial data
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadTeamMembers();
     await loadAvailability();
     await loadProjectEvents();
     await checkAPIStatus();
+    await loadDevNotes();
     renderCalendar();
 
     // Set GitHub and Drive links
     loadProjectLinks();
+
+    // Show hardware section by default
+    document.querySelector('.dev-tab').click();
 });
 
 // Project Links
@@ -350,16 +353,83 @@ function resetEventForm() {
     document.getElementById('cancel-event-btn').style.display = 'none';
 }
 
-// API Testing
-async function checkAPIStatus() {
+// Collapsible Sections
+function toggleSection(headerElement) {
+    const section = headerElement.closest('.collapsible-section');
+    section.classList.toggle('collapsed');
+}
+
+// Development Tabs
+function showDevSection(sectionName) {
+    // Update tab buttons
+    document.querySelectorAll('.dev-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    // Update sections
+    document.querySelectorAll('.dev-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(`dev-${sectionName}`).classList.add('active');
+}
+
+// Save Development Notes
+async function saveDevNotes(section) {
+    const textarea = document.querySelector(`#dev-${section} textarea`);
+    const notes = textarea.value;
+
     try {
-        const response = await fetch('/api/chess/status');
-        const data = await response.json();
-        document.getElementById('status-text').textContent = data.status || 'Online';
+        const response = await fetch(`/api/chess/development/notes/${section}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes })
+        });
+
+        if (response.ok) {
+            const savedNotesEl = document.querySelector(`#dev-${section} .saved-notes`);
+            savedNotesEl.textContent = notes;
+            alert('Notes saved successfully!');
+        } else {
+            alert('Failed to save notes');
+        }
     } catch (error) {
-        document.getElementById('status-text').textContent = 'Offline';
-        document.querySelector('.status-dot').style.background = '#f56565';
+        console.error('Error saving notes:', error);
+        alert('Error saving notes');
     }
+}
+
+// Load development notes on page load
+async function loadDevNotes() {
+    try {
+        const response = await fetch('/api/chess/development/notes');
+        const data = await response.json();
+
+        if (data.hardware) {
+            document.querySelector('#dev-hardware textarea').value = data.hardware;
+            document.querySelector('#dev-hardware .saved-notes').textContent = data.hardware;
+        }
+        if (data.software) {
+            document.querySelector('#dev-software textarea').value = data.software;
+            document.querySelector('#dev-software .saved-notes').textContent = data.software;
+        }
+        if (data.internet) {
+            document.querySelector('#dev-internet textarea').value = data.internet;
+            document.querySelector('#dev-internet .saved-notes').textContent = data.internet;
+        }
+    } catch (error) {
+        console.error('Error loading notes:', error);
+    }
+}
+
+try {
+    const response = await fetch('/api/chess/status');
+    const data = await response.json();
+    document.getElementById('status-text').textContent = data.status || 'Online';
+} catch (error) {
+    document.getElementById('status-text').textContent = 'Offline';
+    document.querySelector('.status-dot').style.background = '#f56565';
+}
 }
 
 document.getElementById('test-api-btn').addEventListener('click', async () => {

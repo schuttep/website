@@ -1434,8 +1434,8 @@ function loadChessProject() {
 
     return {
         projectLinks: {
-            github: 'https://github.com',
-            drive: 'https://drive.google.com'
+            github: 'https://github.com/schuttep/ECE-445-Senior-Design-Project',
+            drive: 'https://drive.google.com/drive/folders/16dQXFX1BjJN77k3mek6IZwEc7eQAuTVy?usp=sharing'
         },
         teamMembers: [],
         availability: [],
@@ -1732,13 +1732,26 @@ app.delete('/api/chess/game/:gameId', (req, res) => {
     res.json({ message: 'Game ended', game: removed[0] });
 });
 
-function initializeChessBoard() {
-    return {
-        pieces: [],
-        currentTurn: 'white'
-    };
-}
+// Development Notes API Endpoints
+app.get('/api/chess/development/notes', (req, res) => {
+    const notes = chessProjectData.developmentNotes || {};
+    res.json(notes);
+});
 
-// =============================================================================
-// END CHESS BOARD PROJECT API
-// =============================================================================
+app.post('/api/chess/development/notes/:section', (req, res) => {
+    const { section } = req.params;
+    const { notes } = req.body;
+
+    if (!['hardware', 'software', 'internet'].includes(section)) {
+        return res.status(400).json({ error: 'Invalid section. Must be hardware, software, or internet' });
+    }
+
+    if (!chessProjectData.developmentNotes) {
+        chessProjectData.developmentNotes = {};
+    }
+
+    chessProjectData.developmentNotes[section] = notes;
+    saveChessProject();
+    res.json({ message: 'Notes saved', section, notes });
+});
+
