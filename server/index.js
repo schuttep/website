@@ -1316,107 +1316,6 @@ if (process.env.NODE_ENV === 'development') {
     });
 }
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
-});
-
-// 404 handler
-app.use((req, res) => {
-    if (req.path.startsWith('/api')) {
-        return res.status(404).json({ error: 'Route not found' });
-    }
-
-    res.status(404).sendFile(path.join(publicDir, 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', async () => {
-    console.log(`Server is running on http://0.0.0.0:${PORT}`);
-
-    // Schedule nightly AI portfolio update (runs at 6 PM EST every Friday)
-    // Cron format: minute hour day-of-month month day-of-week
-    cron.schedule('0 18 * * 5', async () => {
-        console.log('Running scheduled AI portfolio rebalance...');
-        try {
-            const symbols = ['SPY', 'VOO', 'QQQ', 'VTI', 'IEF', 'LQD', 'BND', 'GLD'];
-
-            // Fetch latest prices
-            const prices = {};
-            for (const symbol of symbols) {
-                try {
-                    const stockData = await getStockPrice(symbol);
-                    prices[symbol] = stockData.price;
-
-                    if (!aiPortfolioData.priceHistory[symbol]) {
-                        aiPortfolioData.priceHistory[symbol] = [];
-                    }
-                    aiPortfolioData.priceHistory[symbol].push({
-                        date: new Date().toISOString().split('T')[0],
-                        close: stockData.price
-                    });
-                } catch (error) {
-                    console.error(`Failed to get price for ${symbol}:`, error);
-                }
-            }
-
-            // Only rebalance if we have enough price history
-            if (aiPortfolioData.priceHistory.SPY.length >= 200) {
-                const { regime, indicators, reason } = determineRegime(aiPortfolioData.priceHistory.SPY);
-                const targetWeights = getTargetWeights(regime);
-
-                const rebalanceResult = await simulateRebalance(
-                    aiPortfolioData.modelPerformance.positions,
-                    targetWeights,
-                    prices
-                );
-
-                aiPortfolioData.modelPerformance.positions = rebalanceResult.newPositions;
-                aiPortfolioData.modelPerformance.currentNAV = rebalanceResult.navAfter;
-
-                aiPortfolioData.modelPerformance.equityCurve.push({
-                    date: new Date().toISOString().split('T')[0],
-                    nav: rebalanceResult.navAfter,
-                    regime: regime
-                });
-
-                const newAllocation = {
-                    date: new Date().toISOString().split('T')[0],
-                    regime: regime,
-                    weights: targetWeights,
-                    indicators: indicators,
-                    reason: reason
-                };
-
-                aiPortfolioData.rebalanceHistory.push({
-                    ...newAllocation,
-                    trades: rebalanceResult.trades,
-                    turnover: rebalanceResult.turnover,
-                    transactionCosts: rebalanceResult.transactionCosts,
-                    navBefore: rebalanceResult.navBefore,
-                    navAfter: rebalanceResult.navAfter
-                });
-
-                aiPortfolioData.currentAllocation = newAllocation;
-                saveAIPortfolio();
-
-                // Sync to Portfolio Manager
-                syncAIPortfolioToManager();
-
-                console.log(`Scheduled rebalance completed. Regime: ${regime}, NAV: $${rebalanceResult.navAfter.toLocaleString()}`);
-            } else {
-                console.log('Not enough price history for rebalance. Need 200 days, have:', aiPortfolioData.priceHistory.SPY.length);
-            }
-        } catch (error) {
-            console.error('Scheduled rebalance failed:', error);
-        }
-    }, {
-        timezone: "America/New_York"
-    });
-
-    console.log('AI Portfolio scheduled job configured (Fridays at 6 PM EST)');
-});
-
 // =============================================================================
 // CHESS BOARD PROJECT API
 // =============================================================================
@@ -1472,16 +1371,18 @@ app.get('/api/chess/team/members', (req, res) => {
 });
 
 app.post('/api/chess/team/member', (req, res) => {
-    const { name, role } = req.body;
+    const { name, role, email } = req.body;
+
     if (!name) {
         return res.status(400).json({ error: 'Name is required' });
     }
 
     const member = {
         id: uuidv4(),
-        name: name.trim(),
-        role: (role || 'Team Member').trim(),
-        addedAt: new Date().toISOString()
+        name,
+        role: role || '',
+        email: email || '',
+        joinedAt: new Date().toISOString()
     };
 
     chessProjectData.teamMembers.push(member);
@@ -1491,6 +1392,7 @@ app.post('/api/chess/team/member', (req, res) => {
 
 app.delete('/api/chess/team/member/:id', (req, res) => {
     const index = chessProjectData.teamMembers.findIndex(m => m.id === req.params.id);
+
     if (index === -1) {
         return res.status(404).json({ error: 'Member not found' });
     }
@@ -1500,24 +1402,25 @@ app.delete('/api/chess/team/member/:id', (req, res) => {
     res.json({ message: 'Member removed', member: removed[0] });
 });
 
-// Meeting Availability
-app.get('/api/chess/meeting/availability', (req, res) => {
+// Availability & Meeting Scheduler
+app.get('/api/chess/availability', (req, res) => {
     res.json({ availability: chessProjectData.availability });
 });
 
-app.post('/api/chess/meeting/availability', (req, res) => {
-    const { name, date, timeFrom, timeTo } = req.body;
+app.post('/api/chess/availability', (req, res) => {
+    const { memberName, date, timeFrom, timeTo } = req.body;
 
-    if (!name || !date || !timeFrom || !timeTo) {
+    if (!memberName || !date || !timeFrom || !timeTo) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
     const slot = {
-        name: name.trim(),
+        id: uuidv4(),
+        memberName,
         date,
         timeFrom,
         timeTo,
-        addedAt: new Date().toISOString()
+        createdAt: new Date().toISOString()
     };
 
     chessProjectData.availability.push(slot);
@@ -1525,10 +1428,11 @@ app.post('/api/chess/meeting/availability', (req, res) => {
     res.status(201).json(slot);
 });
 
-app.delete('/api/chess/meeting/availability/:index', (req, res) => {
-    const index = parseInt(req.params.index);
-    if (index < 0 || index >= chessProjectData.availability.length) {
-        return res.status(404).json({ error: 'Availability not found' });
+app.delete('/api/chess/availability/:id', (req, res) => {
+    const index = chessProjectData.availability.findIndex(a => a.id === req.params.id);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Availability slot not found' });
     }
 
     const removed = chessProjectData.availability.splice(index, 1);
@@ -1536,59 +1440,7 @@ app.delete('/api/chess/meeting/availability/:index', (req, res) => {
     res.json({ message: 'Availability removed', slot: removed[0] });
 });
 
-app.get('/api/chess/meeting/best-time', (req, res) => {
-    const availability = chessProjectData.availability;
-
-    if (availability.length === 0) {
-        return res.json({ bestTime: null });
-    }
-
-    // Group by date
-    const byDate = {};
-    availability.forEach(slot => {
-        if (!byDate[slot.date]) byDate[slot.date] = [];
-        byDate[slot.date].push(slot);
-    });
-
-    // Find date with most availability
-    let bestDate = null;
-    let maxCount = 0;
-
-    for (const date in byDate) {
-        if (byDate[date].length > maxCount) {
-            maxCount = byDate[date].length;
-            bestDate = date;
-        }
-    }
-
-    if (!bestDate || maxCount < 2) {
-        return res.json({ bestTime: null });
-    }
-
-    // Find overlapping time on best date
-    const slots = byDate[bestDate];
-    const members = slots.map(s => s.name);
-
-    // Simple overlap: use earliest start and latest end that overlaps
-    const times = slots.map(s => ({
-        from: s.timeFrom,
-        to: s.timeTo
-    }));
-
-    const latestStart = times.reduce((max, t) => t.from > max ? t.from : max, times[0].from);
-    const earliestEnd = times.reduce((min, t) => t.to < min ? t.to : min, times[0].to);
-
-    res.json({
-        bestTime: {
-            date: bestDate,
-            timeFrom: latestStart,
-            timeTo: earliestEnd,
-            members: members
-        }
-    });
-});
-
-// Project Events
+// Project Calendar Events
 app.get('/api/chess/project/events', (req, res) => {
     res.json({ events: chessProjectData.projectEvents });
 });
@@ -1755,3 +1607,114 @@ app.post('/api/chess/development/notes/:section', (req, res) => {
     res.json({ message: 'Notes saved', section, notes });
 });
 
+function initializeChessBoard() {
+    return {
+        pieces: [],
+        currentTurn: 'white'
+    };
+}
+
+// =============================================================================
+// END CHESS BOARD PROJECT API
+// =============================================================================
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// 404 handler
+app.use((req, res) => {
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'Route not found' });
+    }
+
+    res.status(404).sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.listen(PORT, '0.0.0.0', async () => {
+    console.log(`Server is running on http://0.0.0.0:${PORT}`);
+
+    // Schedule nightly AI portfolio update (runs at 6 PM EST every Friday)
+    // Cron format: minute hour day-of-month month day-of-week
+    cron.schedule('0 18 * * 5', async () => {
+        console.log('Running scheduled AI portfolio rebalance...');
+        try {
+            const symbols = ['SPY', 'VOO', 'QQQ', 'VTI', 'IEF', 'LQD', 'BND', 'GLD'];
+
+            // Fetch latest prices
+            const prices = {};
+            for (const symbol of symbols) {
+                try {
+                    const stockData = await getStockPrice(symbol);
+                    prices[symbol] = stockData.price;
+
+                    if (!aiPortfolioData.priceHistory[symbol]) {
+                        aiPortfolioData.priceHistory[symbol] = [];
+                    }
+                    aiPortfolioData.priceHistory[symbol].push({
+                        date: new Date().toISOString().split('T')[0],
+                        close: stockData.price
+                    });
+                } catch (error) {
+                    console.error(`Failed to get price for ${symbol}:`, error);
+                }
+            }
+
+            // Only rebalance if we have enough price history
+            if (aiPortfolioData.priceHistory.SPY.length >= 200) {
+                const { regime, indicators, reason } = determineRegime(aiPortfolioData.priceHistory.SPY);
+                const targetWeights = getTargetWeights(regime);
+
+                const rebalanceResult = await simulateRebalance(
+                    aiPortfolioData.modelPerformance.positions,
+                    targetWeights,
+                    prices
+                );
+
+                aiPortfolioData.modelPerformance.positions = rebalanceResult.newPositions;
+                aiPortfolioData.modelPerformance.currentNAV = rebalanceResult.navAfter;
+
+                aiPortfolioData.modelPerformance.equityCurve.push({
+                    date: new Date().toISOString().split('T')[0],
+                    nav: rebalanceResult.navAfter,
+                    regime: regime
+                });
+
+                const newAllocation = {
+                    date: new Date().toISOString().split('T')[0],
+                    regime: regime,
+                    weights: targetWeights,
+                    indicators: indicators,
+                    reason: reason
+                };
+
+                aiPortfolioData.rebalanceHistory.push({
+                    ...newAllocation,
+                    trades: rebalanceResult.trades,
+                    turnover: rebalanceResult.turnover,
+                    transactionCosts: rebalanceResult.transactionCosts,
+                    navBefore: rebalanceResult.navBefore,
+                    navAfter: rebalanceResult.navAfter
+                });
+
+                aiPortfolioData.currentAllocation = newAllocation;
+                saveAIPortfolio();
+
+                // Sync to Portfolio Manager
+                syncAIPortfolioToManager();
+
+                console.log(`Scheduled rebalance completed. Regime: ${regime}, NAV: $${rebalanceResult.navAfter.toLocaleString()}`);
+            } else {
+                console.log('Not enough price history for rebalance. Need 200 days, have:', aiPortfolioData.priceHistory.SPY.length);
+            }
+        } catch (error) {
+            console.error('Scheduled rebalance failed:', error);
+        }
+    }, {
+        timezone: "America/New_York"
+    });
+
+    console.log('AI Portfolio scheduled job configured (Fridays at 6 PM EST)');
+});
