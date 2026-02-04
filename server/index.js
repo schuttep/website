@@ -436,7 +436,7 @@ app.get('/api/calendar/events', (req, res) => {
 });
 
 app.post('/api/calendar/events', (req, res) => {
-    const { title, date, time, notes } = req.body;
+    const { title, date, time, notes, color } = req.body;
 
     if (!title || !date) {
         return res.status(400).json({ error: 'Title and date are required' });
@@ -448,6 +448,7 @@ app.post('/api/calendar/events', (req, res) => {
         date: date.trim(),
         time: time ? time.trim() : '',
         notes: notes ? notes.trim() : '',
+        color: color && /^#[0-9A-F]{6}$/i.test(color) ? color : '#2c6bff',
         createdAt: new Date()
     };
 
@@ -474,6 +475,9 @@ app.put('/api/calendar/events/:id', (req, res) => {
     }
     if (req.body.notes !== undefined) {
         event.notes = req.body.notes.trim();
+    }
+    if (req.body.color !== undefined && /^#[0-9A-F]{6}$/i.test(req.body.color)) {
+        event.color = req.body.color;
     }
 
     saveCalendarEvents();

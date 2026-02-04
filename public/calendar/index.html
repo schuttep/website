@@ -20,6 +20,24 @@
     </header>
 
     <main class="container">
+        <section class="card calendar-card">
+            <div class="calendar-header">
+                <button id="prev-month" type="button" class="nav-btn">‹</button>
+                <h2 id="month-year"></h2>
+                <button id="next-month" type="button" class="nav-btn">›</button>
+            </div>
+            <div class="calendar-weekdays">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+        </section>
+
         <section class="card">
             <h2>Add Event</h2>
             <form id="event-form" class="event-form">
@@ -36,6 +54,13 @@
                     <input type="time" id="time" name="time" />
                 </label>
                 <label>
+                    Color
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="color" name="color" value="#2c6bff" />
+                        <span id="color-label">Blue</span>
+                    </div>
+                </label>
+                <label>
                     Notes
                     <textarea id="notes" name="notes" rows="3"></textarea>
                 </label>
@@ -45,8 +70,7 @@
 
         <section class="card">
             <div class="section-header">
-                <h2>Upcoming Events</h2>
-                <button id="refresh-btn" type="button">Refresh</button>
+                <h2>All Events</h2>
             </div>
             <div id="status" class="status">Loading events...</div>
             <div id="events" class="events"></div>

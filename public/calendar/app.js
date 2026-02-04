@@ -1,7 +1,27 @@
 const eventsContainer = document.getElementById('events');
 const statusEl = document.getElementById('status');
 const form = document.getElementById('event-form');
-const refreshBtn = document.getElementById('refresh-btn');
+const calendarGrid = document.getElementById('calendar-grid');
+const monthYearEl = document.getElementById('month-year');
+const prevMonthBtn = document.getElementById('prev-month');
+const nextMonthBtn = document.getElementById('next-month');
+const dateInput = document.getElementById('date');
+const colorInput = document.getElementById('color');
+const colorLabel = document.getElementById('color-label');
+
+const colorNames = {
+    '#2c6bff': 'Blue',
+    '#48bb78': 'Green',
+    '#f6ad55': 'Orange',
+    '#f56565': 'Red',
+    '#9f7aea': 'Purple',
+    '#ed64a6': 'Pink',
+    '#4299e1': 'Sky Blue',
+    '#38b2ac': 'Teal'
+};
+
+let currentDate = new Date();
+let allEvents = [];
 
 async function fetchEvents() {
     statusEl.textContent = 'Loading events...';
@@ -12,10 +32,85 @@ async function fetchEvents() {
             throw new Error('Failed to load events');
         }
         const data = await response.json();
-        renderEvents(data.events || []);
+        allEvents = data.events || [];
+        renderCalendar();
+        renderEvents(allEvents);
         statusEl.textContent = '';
     } catch (error) {
         statusEl.textContent = error.message;
+    }
+}
+
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    monthYearEl.textContent = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const prevLastDay = new Date(year, month, 0);
+
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+    calendarGrid.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 42; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+
+        if (date.getMonth() !== month) {
+            dayEl.classList.add('other-month');
+        }
+
+        const dateOnly = new Date(date);
+        dateOnly.setHours(0, 0, 0, 0);
+        if (dateOnly.getTime() === today.getTime()) {
+            dayEl.classList.add('today');
+        }
+
+        const dateStr = date.toISOString().split('T')[0];
+        const dayEvents = allEvents.filter(e => e.date === dateStr);
+
+        const numberEl = document.createElement('div');
+        numberEl.className = 'calendar-day-number';
+        numberEl.textContent = date.getDate();
+        dayEl.appendChild(numberEl);
+
+        if (dayEvents.length > 0) {
+            const eventsEl = document.createElement('div');
+            eventsEl.className = 'calendar-events';
+            dayEvents.slice(0, 2).forEach(event => {
+                const eventEl = document.createElement('div');
+                eventEl.className = 'calendar-event-title';
+                eventEl.style.backgroundColor = `${event.color}20`;
+                eventEl.style.color = event.color;
+                eventEl.style.borderLeft = `3px solid ${event.color}`;
+                eventEl.innerHTML = `<span class="calendar-event-dot" style="background-color: ${event.color}"></span>${event.title}`;
+                eventsEl.appendChild(eventEl);
+            });
+            if (dayEvents.length > 2) {
+                const moreEl = document.createElement('div');
+                moreEl.className = 'calendar-event-title';
+                moreEl.textContent = `+${dayEvents.length - 2} more`;
+                eventsEl.appendChild(moreEl);
+            }
+            dayEl.appendChild(eventsEl);
+        }
+
+        dayEl.addEventListener('click', () => {
+            dateInput.value = dateStr;
+            form.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('title').focus();
+        });
+
+        calendarGrid.appendChild(dayEl);
     }
 }
 
@@ -36,9 +131,11 @@ function renderEvents(events) {
     sorted.forEach(event => {
         const card = document.createElement('div');
         card.className = 'event';
+        card.style.borderLeft = `4px solid ${event.color || '#2c6bff'}`;
 
         const title = document.createElement('h3');
         title.textContent = event.title;
+        title.style.color = event.color || '#2c6bff';
 
         const meta = document.createElement('div');
         meta.className = 'event-meta';
@@ -85,6 +182,8 @@ async function handleCreate(event) {
         }
 
         form.reset();
+        colorInput.value = '#2c6bff';
+        colorLabel.textContent = 'Blue';
         await fetchEvents();
     } catch (error) {
         statusEl.textContent = error.message;
@@ -108,6 +207,16 @@ async function handleDelete(id) {
 }
 
 form.addEventListener('submit', handleCreate);
-refreshBtn.addEventListener('click', fetchEvents);
+colorInput.addEventListener('change', () => {
+    colorLabel.textContent = colorNames[colorInput.value] || 'Custom';
+});
+prevMonthBtn.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+});
+nextMonthBtn.addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+});
 
 fetchEvents();
