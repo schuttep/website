@@ -1,8 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './PortfolioDetail.css';
 import axios from 'axios';
 import StockSearch from './StockSearch';
 import { API_BASE_URL } from './config';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js';
+import { Pie, Bar, Line } from 'react-chartjs-2';
+
+ChartJS.register(
+    ArcElement,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
     const [refreshing, setRefreshing] = useState(false);
@@ -12,6 +37,57 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
     const [editingPriceStockId, setEditingPriceStockId] = useState(null);
     const [editingPrice, setEditingPrice] = useState('');
     const [updatingPrice, setUpdatingPrice] = useState(false);
+    const [sortBy, setSortBy] = useState('value'); // value, symbol, gainLoss, percentage
+    const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
+
+    // Calculate portfolio metrics
+    const portfolioMetrics = useMemo(() => {
+        if (!portfolio.assets || portfolio.assets.length === 0) {
+            return {
+                totalValue: 0,
+                totalGainLoss: 0,
+                totalGainLossPercentage: 0,
+                bestPerformer: null,
+                worstPerformer: null,
+                totalInvested: 0
+            };
+        }
+
+        let totalInvested = 0;
+        let totalCurrentValue = 0;
+        let bestPerformer = portfolio.assets[0];
+        let worstPerformer = portfolio.assets[0];
+
+        portfolio.assets.forEach(stock => {
+            const invested = stock.purchasePrice * stock.quantity;
+            const current = (stock.currentPrice || stock.purchasePrice) * stock.quantity;
+            totalInvested += invested;
+            totalCurrentValue += current;
+
+            const stockGainLossPercentage = ((current - invested) / invested) * 100;
+            const bestPerformancePercentage = ((bestPerformer.currentPrice * bestPerformer.quantity - bestPerformer.purchasePrice * bestPerformer.quantity) / (bestPerformer.purchasePrice * bestPerformer.quantity)) * 100;
+            const worstPerformancePercentage = ((worstPerformer.currentPrice * worstPerformer.quantity - worstPerformer.purchasePrice * worstPerformer.quantity) / (worstPerformer.purchasePrice * worstPerformer.quantity)) * 100;
+
+            if (stockGainLossPercentage > bestPerformancePercentage) {
+                bestPerformer = stock;
+            }
+            if (stockGainLossPercentage < worstPerformancePercentage) {
+                worstPerformer = stock;
+            }
+        });
+
+        const totalGainLoss = totalCurrentValue - totalInvested;
+        const totalGainLossPercentage = totalInvested > 0 ? (totalGainLoss / totalInvested) * 100 : 0;
+
+        return {
+            totalValue: totalCurrentValue,
+            totalGainLoss,
+            totalGainLossPercentage,
+            bestPerformer,
+            worstPerformer,
+            totalInvested
+        };
+    }, [portfolio.assets]);
 
     const handleRemoveStock = async (stockId) => {
         if (window.confirm('Remove this stock from the portfolio?')) {
@@ -123,48 +199,246 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
         return { amount: gainLoss, percentage };
     };
 
+    // Sorted stocks
+    const sortedStocks = useMemo(() => {
+        if (!portfolio.assets) return [];
+
+        const stocks = [...portfolio.assets];
+        stocks.sort((a, b) => {
+            let comparison = 0;
+            switch (sortBy) {
+                case 'symbol':
+                    comparison = a.symbol.localeCompare(b.symbol);
+                    break;
+                case 'value':
+                    comparison = a.totalValue - b.totalValue;
+                    break;
+                case 'gainLoss':
+                    const aGain = (a.currentPrice * a.quantity) - (a.purchasePrice * a.quantity);
+                    const bGain = (b.currentPrice * b.quantity) - (b.purchasePrice * b.quantity);
+                    comparison = aGain - bGain;
+                    break;
+                case 'percentage':
+                    const aPercentage = calculateGainLoss(a).percentage;
+                    const bPercentage = calculateGainLoss(b).percentage;
+                    comparison = aPercentage - bPercentage;
+                    break;
+                default:
+                    comparison = 0;
+            }
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+        return stocks;
+    }, [portfolio.assets, sortBy, sortOrder]);
+
+    // Chart data
+    const pieChartData = {
+        labels: portfolio.assets?.map(stock => stock.symbol) || [],
+        datasets: [{
+            data: portfolio.assets?.map(stock => stock.totalValue) || [],
+            backgroundColor: [
+                '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                '#43e97b', '#fa709a', '#fee140', '#30cfd0',
+                '#a8edea', '#fed6e3'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    };
+
+    const barChartData = {
+        labels: portfolio.assets?.map(stock => stock.symbol) || [],
+        datasets: [{
+            label: 'Gain/Loss ($)',
+            data: portfolio.assets?.map(stock => {
+                const gainLoss = calculateGainLoss(stock);
+                return gainLoss.amount;
+            }) || [],
+            backgroundColor: portfolio.assets?.map(stock => {
+                const gainLoss = calculateGainLoss(stock);
+                return gainLoss.amount >= 0 ? '#28a745' : '#dc3545';
+            }) || [],
+            borderRadius: 6
+        }]
+    };
+
+    const performanceChartData = {
+        labels: portfolio.assets?.map(stock => stock.symbol) || [],
+        datasets: [{
+            label: 'Gain/Loss %',
+            data: portfolio.assets?.map(stock => {
+                const gainLoss = calculateGainLoss(stock);
+                return gainLoss.percentage;
+            }) || [],
+            backgroundColor: portfolio.assets?.map(stock => {
+                const gainLoss = calculateGainLoss(stock);
+                return gainLoss.amount >= 0 ? 'rgba(40, 167, 69, 0.2)' : 'rgba(220, 53, 69, 0.2)';
+            }) || [],
+            borderColor: portfolio.assets?.map(stock => {
+                const gainLoss = calculateGainLoss(stock);
+                return gainLoss.amount >= 0 ? '#28a745' : '#dc3545';
+            }) || [],
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
+    const handleSort = (newSortBy) => {
+        if (sortBy === newSortBy) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(newSortBy);
+            setSortOrder('desc');
+        }
+    };
+
     return (
         <div className="portfolio-detail">
-            <div className="portfolio-detail-header">
-                <div>
-                    <h2>{portfolio.name}</h2>
-                    <p className="portfolio-total">Total Value: ${portfolio.totalValue.toFixed(2)}</p>
+            {/* Dashboard Summary Cards */}
+            <div className="dashboard-cards">
+                <div className="dashboard-card total-value">
+                    <div className="card-icon">💰</div>
+                    <div className="card-content">
+                        <h3>Total Value</h3>
+                        <p className="card-value">${portfolioMetrics.totalValue.toFixed(2)}</p>
+                        <span className="card-subtitle">Current Portfolio Value</span>
+                    </div>
                 </div>
+                <div className={`dashboard-card gain-loss ${portfolioMetrics.totalGainLoss >= 0 ? 'positive' : 'negative'}`}>
+                    <div className="card-icon">{portfolioMetrics.totalGainLoss >= 0 ? '📈' : '📉'}</div>
+                    <div className="card-content">
+                        <h3>Total Gain/Loss</h3>
+                        <p className="card-value">
+                            {portfolioMetrics.totalGainLoss >= 0 ? '+' : ''}${portfolioMetrics.totalGainLoss.toFixed(2)}
+                        </p>
+                        <span className="card-subtitle">
+                            {portfolioMetrics.totalGainLossPercentage >= 0 ? '+' : ''}{portfolioMetrics.totalGainLossPercentage.toFixed(2)}%
+                        </span>
+                    </div>
+                </div>
+                <div className="dashboard-card best-performer">
+                    <div className="card-icon">🔥</div>
+                    <div className="card-content">
+                        <h3>Best Performer</h3>
+                        <p className="card-value">{portfolioMetrics.bestPerformer?.symbol || 'N/A'}</p>
+                        <span className="card-subtitle">
+                            {portfolioMetrics.bestPerformer ? `+${calculateGainLoss(portfolioMetrics.bestPerformer).percentage.toFixed(2)}%` : 'Add stocks'}
+                        </span>
+                    </div>
+                </div>
+                <div className="dashboard-card worst-performer">
+                    <div className="card-icon">📊</div>
+                    <div className="card-content">
+                        <h3>Total Invested</h3>
+                        <p className="card-value">${portfolioMetrics.totalInvested.toFixed(2)}</p>
+                        <span className="card-subtitle">{portfolio.assets?.length || 0} Holdings</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Charts Section */}
+            {portfolio.assets && portfolio.assets.length > 0 && (
+                <div className="charts-section">
+                    <div className="chart-container">
+                        <h3>Portfolio Allocation</h3>
+                        <div className="chart-wrapper">
+                            <Pie data={pieChartData} options={{ maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }} />
+                        </div>
+                    </div>
+                    <div className="chart-container">
+                        <h3>Gain/Loss by Stock</h3>
+                        <div className="chart-wrapper">
+                            <Bar data={barChartData} options={{ maintainAspectRatio: true, plugins: { legend: { display: false } } }} />
+                        </div>
+                    </div>
+                    <div className="chart-container full-width">
+                        <h3>Performance Trend (%)</h3>
+                        <div className="chart-wrapper">
+                            <Line data={performanceChartData} options={{
+                                maintainAspectRatio: true,
+                                scales: {
+                                    y: {
+                                        ticks: {
+                                            callback: function (value) {
+                                                return value + '%';
+                                            }
+                                        }
+                                    }
+                                }
+                            }} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="portfolio-actions">
+                <StockSearch portfolioId={portfolio.id} onStockAdded={onStockAdded} />
                 <button
                     className="refresh-prices-btn"
                     onClick={handleRefreshPrices}
                     disabled={refreshing}
-                    title="Refresh all stock prices from AlphaVantage"
+                    title="Refresh all stock prices"
                 >
                     {refreshing ? '⟳ Updating...' : '⟳ Refresh Prices'}
                 </button>
             </div>
 
-            <StockSearch portfolioId={portfolio.id} onStockAdded={onStockAdded} />
-
+            {/* Holdings Table */}
             {portfolio.assets && portfolio.assets.length > 0 ? (
                 <div className="stocks-section">
-                    <h3>Holdings</h3>
+                    <div className="stocks-header">
+                        <h3>Holdings</h3>
+                        <div className="sort-controls">
+                            <span>Sort by:</span>
+                            <button
+                                className={`sort-btn ${sortBy === 'symbol' ? 'active' : ''}`}
+                                onClick={() => handleSort('symbol')}
+                            >
+                                Symbol {sortBy === 'symbol' && (sortOrder === 'asc' ? '↑' : '↓')}
+                            </button>
+                            <button
+                                className={`sort-btn ${sortBy === 'value' ? 'active' : ''}`}
+                                onClick={() => handleSort('value')}
+                            >
+                                Value {sortBy === 'value' && (sortOrder === 'asc' ? '↑' : '↓')}
+                            </button>
+                            <button
+                                className={`sort-btn ${sortBy === 'gainLoss' ? 'active' : ''}`}
+                                onClick={() => handleSort('gainLoss')}
+                            >
+                                Gain/Loss {sortBy === 'gainLoss' && (sortOrder === 'asc' ? '↑' : '↓')}
+                            </button>
+                            <button
+                                className={`sort-btn ${sortBy === 'percentage' ? 'active' : ''}`}
+                                onClick={() => handleSort('percentage')}
+                            >
+                                % {sortBy === 'percentage' && (sortOrder === 'asc' ? '↑' : '↓')}
+                            </button>
+                        </div>
+                    </div>
                     <div className="stocks-list">
-                        {portfolio.assets.map((stock) => {
+                        {sortedStocks.map((stock) => {
                             const gainLoss = calculateGainLoss(stock);
                             const isGain = gainLoss.amount >= 0;
                             const isEditing = editingStockId === stock.id;
+                            const allocation = (stock.totalValue / portfolioMetrics.totalValue) * 100;
 
                             return (
                                 <div key={stock.id} className="stock-item">
                                     <div className="stock-details">
                                         <div className="stock-header">
-                                            <h4>{stock.symbol}</h4>
-                                            <button
-                                                className="remove-stock-btn"
-                                                onClick={() => handleRemoveStock(stock.id)}
-                                                title="Remove from portfolio"
-                                            >
-                                                ✕
-                                            </button>
+                                            <div>
+                                                <h4>{stock.symbol}</h4>
+                                                <p className="stock-name">{stock.name}</p>
+                                            </div>
+                                            <div className="stock-badges">
+                                                {gainLoss.percentage > 20 && <span className="badge hot">🔥 Hot</span>}
+                                                {gainLoss.percentage < -10 && <span className="badge declining">📉 Down</span>}
+                                                <span className="badge allocation">{allocation.toFixed(1)}%</span>
+                                            </div>
                                         </div>
-                                        <p className="stock-name">{stock.name}</p>
                                         {stock.purchaseDate && (
                                             <div className="purchase-date-section">
                                                 {isEditing ? (
@@ -205,6 +479,12 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                                                 )}
                                             </div>
                                         )}
+                                        <div className="performance-bar">
+                                            <div
+                                                className={`performance-fill ${isGain ? 'gain' : 'loss'}`}
+                                                style={{ width: `${Math.min(Math.abs(gainLoss.percentage), 100)}%` }}
+                                            ></div>
+                                        </div>
                                     </div>
                                     <div className="stock-stats">
                                         <div className="stat">
@@ -257,13 +537,20 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                                         <div className={`stat gain-loss ${isGain ? 'gain' : 'loss'}`}>
                                             <span className="stat-label">Gain/Loss</span>
                                             <span className="stat-value">
-                                                ${gainLoss.amount.toFixed(2)} ({gainLoss.percentage.toFixed(2)}%)
+                                                {isGain ? '+' : ''}${gainLoss.amount.toFixed(2)} ({isGain ? '+' : ''}{gainLoss.percentage.toFixed(2)}%)
                                             </span>
                                         </div>
                                         <div className="stat highlight">
                                             <span className="stat-label">Total Value</span>
                                             <span className="stat-value">${stock.totalValue.toFixed(2)}</span>
                                         </div>
+                                        <button
+                                            className="remove-stock-btn"
+                                            onClick={() => handleRemoveStock(stock.id)}
+                                            title="Remove from portfolio"
+                                        >
+                                            ✕ Remove
+                                        </button>
                                     </div>
                                 </div>
                             );

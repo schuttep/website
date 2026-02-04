@@ -141,16 +141,6 @@ function App() {
                     </>
                 ) : (
                     <>
-                        <section className="status-section">
-                            <h2>Server Status</h2>
-                            <div className="status-card">
-                                <p><strong>Status:</strong> {serverStatus?.status || 'Unknown'}</p>
-                                {serverStatus?.timestamp && (
-                                    <p><strong>Last Updated:</strong> {new Date(serverStatus.timestamp).toLocaleTimeString()}</p>
-                                )}
-                            </div>
-                        </section>
-
                         <section className="portfolios-section">
                             <h2>Your Portfolios</h2>
                             <PortfolioForm onPortfolioCreated={handlePortfolioCreated} />
