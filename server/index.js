@@ -1614,6 +1614,64 @@ function initializeChessBoard() {
     };
 }
 
+// Task Management API Endpoints
+app.get('/api/chess/tasks', (req, res) => {
+    const tasks = chessProjectData.tasks || { hardware: [], software: [], internet: [] };
+    res.json({ tasks });
+});
+
+app.post('/api/chess/tasks/:section', (req, res) => {
+    const { section } = req.params;
+    const task = req.body;
+
+    if (!['hardware', 'software', 'internet'].includes(section)) {
+        return res.status(400).json({ error: 'Invalid section' });
+    }
+
+    if (!chessProjectData.tasks) {
+        chessProjectData.tasks = { hardware: [], software: [], internet: [] };
+    }
+
+    chessProjectData.tasks[section].push(task);
+    saveChessProject();
+    res.status(201).json(task);
+});
+
+app.put('/api/chess/tasks/:section/:taskId/status', (req, res) => {
+    const { section, taskId } = req.params;
+    const { status } = req.body;
+
+    if (!chessProjectData.tasks || !chessProjectData.tasks[section]) {
+        return res.status(404).json({ error: 'Section not found' });
+    }
+
+    const task = chessProjectData.tasks[section].find(t => t.id === taskId);
+    if (!task) {
+        return res.status(404).json({ error: 'Task not found' });
+    }
+
+    task.status = status;
+    saveChessProject();
+    res.json(task);
+});
+
+app.delete('/api/chess/tasks/:section/:taskId', (req, res) => {
+    const { section, taskId } = req.params;
+
+    if (!chessProjectData.tasks || !chessProjectData.tasks[section]) {
+        return res.status(404).json({ error: 'Section not found' });
+    }
+
+    const index = chessProjectData.tasks[section].findIndex(t => t.id === taskId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const removed = chessProjectData.tasks[section].splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Task deleted', task: removed[0] });
+});
+
 // =============================================================================
 // END CHESS BOARD PROJECT API
 // =============================================================================

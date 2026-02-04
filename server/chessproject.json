@@ -11,5 +11,10 @@
         "hardware": "",
         "software": "",
         "internet": ""
+    },
+    "tasks": {
+        "hardware": [],
+        "software": [],
+        "internet": []
     }
 }

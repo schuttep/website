@@ -41,6 +41,51 @@
                 </div>
             </div>
         </section>
+
+        <!-- Project To-Do List -->
+        <section class="card collapsible-section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>✅ Project To-Do List</h2>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="todo-tabs">
+                    <button class="todo-tab active" onclick="showTodoSection('hardware')">Hardware</button>
+                    <button class="todo-tab" onclick="showTodoSection('software')">Software</button>
+                    <button class="todo-tab" onclick="showTodoSection('internet')">Internet/Server</button>
+                </div>
+
+                <!-- Hardware To-Do -->
+                <div id="todo-hardware" class="todo-section active">
+                    <h3>⚡ Hardware Tasks</h3>
+                    <div class="todo-form">
+                        <input type="text" id="hardware-task-input" placeholder="Add new hardware task..." />
+                        <button onclick="addTask('hardware')" class="btn-primary">Add Task</button>
+                    </div>
+                    <div id="hardware-tasks" class="tasks-list"></div>
+                </div>
+
+                <!-- Software To-Do -->
+                <div id="todo-software" class="todo-section">
+                    <h3>💻 Software Tasks</h3>
+                    <div class="todo-form">
+                        <input type="text" id="software-task-input" placeholder="Add new software task..." />
+                        <button onclick="addTask('software')" class="btn-primary">Add Task</button>
+                    </div>
+                    <div id="software-tasks" class="tasks-list"></div>
+                </div>
+
+                <!-- Internet/Server To-Do -->
+                <div id="todo-internet" class="todo-section">
+                    <h3>🌐 Internet/Server Tasks</h3>
+                    <div class="todo-form">
+                        <input type="text" id="internet-task-input" placeholder="Add new internet/server task..." />
+                        <button onclick="addTask('internet')" class="btn-primary">Add Task</button>
+                    </div>
+                    <div id="internet-tasks" class="tasks-list"></div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script src="app.js"></script>
