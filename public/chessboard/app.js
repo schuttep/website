@@ -383,17 +383,18 @@ function renderPartsList() {
     container.innerHTML = parts.map(part => `
         <div class="part-row">
             <div class="part-fields">
-                <input type="text" class="part-name" value="${part.name}" onchange="updatePart('${part.id}', 'name', this.value)" placeholder="Part Name" />
-                <input type="text" class="part-id" value="${part.partId}" onchange="updatePart('${part.id}', 'partId', this.value)" placeholder="Part ID" />
-                <input type="number" class="part-cost" value="${part.cost}" onchange="updatePart('${part.id}', 'cost', parseFloat(this.value))" placeholder="Cost" />
-                <input type="number" class="part-amount" value="${part.amountNeeded}" onchange="updatePart('${part.id}', 'amountNeeded', parseInt(this.value))" placeholder="Amount Needed" />
-                <label class="part-ordered">
-                    <input type="checkbox" ${part.ordered ? 'checked' : ''} onchange="updatePart('${part.id}', 'ordered', this.checked)" />
-                    <span>Ordered</span>
-                </label>
+                <div class="part-name">${part.name}</div>
+                <div class="part-id">${part.partId}</div>
+                <div class="part-cost">$${part.cost.toFixed(2)}</div>
+                <div class="part-amount">${part.amountNeeded}</div>
+                <select class="part-status" onchange="updatePart('${part.id}', 'status', this.value)">
+                    <option value="ordered" ${part.status === 'ordered' ? 'selected' : ''}>Ordered</option>
+                    <option value="on-the-way" ${part.status === 'on-the-way' ? 'selected' : ''}>On the Way</option>
+                    <option value="delivered" ${part.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                </select>
                 <button onclick="deletePart('${part.id}')" class="btn-delete-part">✕ Remove</button>
             </div>
-            <div class="part-total">\$${(part.cost * part.amountNeeded).toFixed(2)}</div>
+            <div class="part-total">$${(part.cost * part.amountNeeded).toFixed(2)}</div>
         </div>
     `).join('');
 
@@ -401,18 +402,28 @@ function renderPartsList() {
 }
 
 async function addPart() {
-    const input = document.getElementById('part-name-input');
-    const name = input.value.trim();
+    const nameInput = document.getElementById('part-name-input');
+    const idInput = document.getElementById('part-id-input');
+    const costInput = document.getElementById('part-cost-input');
+    const amountInput = document.getElementById('part-amount-input');
 
-    if (!name) return;
+    const name = nameInput.value.trim();
+    const partId = idInput.value.trim();
+    const cost = parseFloat(costInput.value);
+    const amountNeeded = parseInt(amountInput.value);
+
+    if (!name || !partId || !cost || !amountNeeded || cost < 0 || amountNeeded < 1) {
+        alert('Please fill in all fields with valid values');
+        return;
+    }
 
     const part = {
         id: Date.now().toString(),
         name,
-        partId: '',
-        cost: 0,
-        amountNeeded: 1,
-        ordered: false
+        partId,
+        cost,
+        amountNeeded,
+        status: 'ordered'
     };
 
     try {
@@ -423,7 +434,10 @@ async function addPart() {
         });
 
         if (response.ok) {
-            input.value = '';
+            nameInput.value = '';
+            idInput.value = '';
+            costInput.value = '';
+            amountInput.value = '';
             await loadParts();
         }
     } catch (error) {
