@@ -823,6 +823,40 @@ body {
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    margin-top: 0.5rem;
+}
+
+.task-assignee-select {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: #3a3a3a;
+    color: #ffffff;
+    transition: all 0.2s;
+    min-width: 120px;
+}
+
+.task-assignee-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.task-deadline-input {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: #3a3a3a;
+    color: #ffffff;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.task-deadline-input:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 
 .task-assignee {

@@ -1659,6 +1659,32 @@ app.put('/api/chess/tasks/:section/:taskId/status', (req, res) => {
     res.json(task);
 });
 
+// Update task (assignedTo or deadline)
+app.put('/api/chess/tasks/:section/:taskId', (req, res) => {
+    const { section, taskId } = req.params;
+    const updates = req.body;
+
+    if (!chessProjectData.tasks || !chessProjectData.tasks[section]) {
+        return res.status(404).json({ error: 'Section not found' });
+    }
+
+    const task = chessProjectData.tasks[section].find(t => t.id === taskId);
+    if (!task) {
+        return res.status(404).json({ error: 'Task not found' });
+    }
+
+    // Update allowed fields
+    if ('assignedTo' in updates) {
+        task.assignedTo = updates.assignedTo;
+    }
+    if ('deadline' in updates) {
+        task.deadline = updates.deadline;
+    }
+
+    saveChessProject();
+    res.json(task);
+});
+
 app.delete('/api/chess/tasks/:section/:taskId', (req, res) => {
     const { section, taskId } = req.params;
 

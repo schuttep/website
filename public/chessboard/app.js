@@ -75,7 +75,8 @@ async function addTask(section) {
 
             // If task has both assignee and deadline, add to calendar
             if (assignee && deadline) {
-                await addTaskToCalendar(assignee, deadline, taskText);
+                const color = getSectionColor(section);
+                await addTaskToCalendar(assignee, deadline, taskText, color);
             }
         }
     } catch (error) {
@@ -101,6 +102,80 @@ async function updateTaskStatus(section, taskId, newStatus) {
         }
     } catch (error) {
         console.error('Error updating task:', error);
+    }
+}
+
+// Update task assignee
+async function updateTaskAssignee(section, taskId, newAssignee) {
+    try {
+        const task = tasks[section].find(t => t.id === taskId);
+        const oldAssignee = task?.assignedTo;
+        const deadline = task?.deadline;
+
+        const response = await fetch(`/api/chess/tasks/${section}/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assignedTo: newAssignee || null })
+        });
+
+        if (response.ok) {
+            if (task) {
+                task.assignedTo = newAssignee || null;
+                renderTasks(section);
+
+                // Update calendar if there's a deadline
+                if (deadline) {
+                    // Remove from old assignee's calendar if exists
+                    if (oldAssignee) {
+                        await removeTaskFromCalendar(oldAssignee, deadline, task.text);
+                    }
+                    // Add to new assignee's calendar if assigned
+                    if (newAssignee) {
+                        const color = getSectionColor(section);
+                        await addTaskToCalendar(newAssignee, deadline, task.text, color);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error updating task assignee:', error);
+    }
+}
+
+// Update task deadline
+async function updateTaskDeadline(section, taskId, newDeadline) {
+    try {
+        const task = tasks[section].find(t => t.id === taskId);
+        const oldDeadline = task?.deadline;
+        const assignee = task?.assignedTo;
+
+        const response = await fetch(`/api/chess/tasks/${section}/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deadline: newDeadline || null })
+        });
+
+        if (response.ok) {
+            if (task) {
+                task.deadline = newDeadline || null;
+                renderTasks(section);
+
+                // Update calendar if there's an assignee
+                if (assignee) {
+                    // Remove from old deadline if exists
+                    if (oldDeadline) {
+                        await removeTaskFromCalendar(assignee, oldDeadline, task.text);
+                    }
+                    // Add to new deadline if set
+                    if (newDeadline) {
+                        const color = getSectionColor(section);
+                        await addTaskToCalendar(assignee, newDeadline, task.text, color);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error updating task deadline:', error);
     }
 }
 
@@ -131,16 +206,19 @@ function renderTasks(section) {
     }
 
     container.innerHTML = sectionTasks.map(task => {
-        const assigneeBadge = task.assignedTo ? `<span class="task-assignee ${task.assignedTo}">${getAssigneeInitial(task.assignedTo)}</span>` : '';
-        const deadlineText = task.deadline ? `<span class="task-deadline">📅 ${formatDate(task.deadline)}</span>` : '';
-
         return `
             <div class="task-item ${task.status}">
                 <div class="task-content">
                     <span class="task-text">${task.text}</span>
                     <div class="task-meta">
-                        ${assigneeBadge}
-                        ${deadlineText}
+                        <select class="task-assignee-select" onchange="updateTaskAssignee('${section}', '${task.id}', this.value)">
+                            <option value="">Unassigned</option>
+                            <option value="payton" ${task.assignedTo === 'payton' ? 'selected' : ''}>P - Payton</option>
+                            <option value="quinn" ${task.assignedTo === 'quinn' ? 'selected' : ''}>Q - Quinn</option>
+                            <option value="danny" ${task.assignedTo === 'danny' ? 'selected' : ''}>D - Danny</option>
+                            <option value="group" ${task.assignedTo === 'group' ? 'selected' : ''}>G - Group</option>
+                        </select>
+                        <input type="date" class="task-deadline-input" value="${task.deadline || ''}" onchange="updateTaskDeadline('${section}', '${task.id}', this.value)" />
                     </div>
                 </div>
                 <div class="task-actions">
@@ -173,15 +251,26 @@ function formatDate(dateString) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// Get color based on task section
+function getSectionColor(section) {
+    const colorMap = {
+        'hardware': 'red',
+        'software': 'green',
+        'internet': 'yellow',
+        'misc': 'blue'
+    };
+    return colorMap[section] || 'blue';
+}
+
 // Add task to calendar
-async function addTaskToCalendar(person, deadline, taskText) {
+async function addTaskToCalendar(person, deadline, taskText, color = 'blue') {
     try {
         const response = await fetch(`/api/chess/calendar/${person}/${deadline}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 title: `Task: ${taskText}`,
-                color: 'blue',
+                color: color,
                 id: Date.now().toString()
             })
         });
@@ -191,6 +280,20 @@ async function addTaskToCalendar(person, deadline, taskText) {
         }
     } catch (error) {
         console.error('Error adding task to calendar:', error);
+    }
+}
+
+// Remove task from calendar
+async function removeTaskFromCalendar(person, deadline, taskText) {
+    try {
+        const events = calendarEvents[person]?.[deadline] || [];
+        const taskEvent = events.find(evt => evt.title === `Task: ${taskText}`);
+
+        if (taskEvent) {
+            await deleteCalendarEvent(person, deadline, taskEvent.id);
+        }
+    } catch (error) {
+        console.error('Error removing task from calendar:', error);
     }
 }
 
