@@ -14,9 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkAPIStatus();
     await loadDevNotes();
     renderCalendar();
-
-    // Set GitHub and Drive links
-    await loadProjectLinks();
 });
 
 // Project Links
