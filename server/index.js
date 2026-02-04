@@ -1710,7 +1710,7 @@ app.get('/api/chess/calendar', (req, res) => {
 
 app.post('/api/chess/calendar/:person/:date', (req, res) => {
     const { person, date } = req.params;
-    const { title, id } = req.body;
+    const { title, id, color } = req.body;
 
     if (!['group', 'payton', 'quinn', 'danny'].includes(person)) {
         return res.status(400).json({ error: 'Invalid person' });
@@ -1728,7 +1728,7 @@ app.post('/api/chess/calendar/:person/:date', (req, res) => {
         chessProjectData.calendar[person][date] = [];
     }
 
-    const event = { title, id };
+    const event = { title, id, color };
     chessProjectData.calendar[person][date].push(event);
     saveChessProject();
     res.status(201).json(event);
