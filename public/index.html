@@ -38,10 +38,10 @@
         <div class="col-bot"></div>
     </div>
     <section class="hero" aria-label="Introduction">
-        <img src="images/theI3.jpg" alt="Illinois Block I" class="hero-block-i" loading="lazy" decoding="async" />
+        <img data-src="images/theI3.jpg" alt="Illinois Block I" class="hero-block-i lazy-img" decoding="async" />
         <div class="hero-inner">
             <div class="hero-text">
-                <img src="images/PortfolioLogo2_ff5f05.png" alt="Payton Schutte logo" class="hero-logo" loading="lazy"
+                <img src="images/PortfolioLogo2_ff5f05.png" alt="Payton Schutte logo" class="hero-logo" loading="eager"
                     decoding="async" />
                 <h1>Hello, I am Payton Schutte.</h1>
                 <p>Senior in Computer Engineering at the</p>
@@ -236,42 +236,42 @@
                     the workshop, you’ll find me climbing, surfing, spearfishing, camping, or hiking.</p>
                 <div class="hobby-gallery">
                     <figure>
-                        <img src="images/IMG_1610.jpeg" alt="Restored Sony Walkman" class="expandable" loading="lazy"
+                        <img data-src="images/IMG_1610.jpeg" alt="Restored Sony Walkman" class="expandable lazy-img"
                             decoding="async">
                         <figcaption>Hawaii Summit</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_2103.jpeg" alt="IBM Selectric 3 typewriter restoration" class="expandable"
-                            loading="lazy" decoding="async">
+                        <img data-src="images/IMG_2103.jpeg" alt="IBM Selectric 3 typewriter restoration"
+                            class="expandable lazy-img" decoding="async">
                         <figcaption>Walkmans</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_2399.jpeg" alt="35mm film photograph" class="expandable" loading="lazy"
+                        <img data-src="images/IMG_2399.jpeg" alt="35mm film photograph" class="expandable lazy-img"
                             decoding="async">
                         <figcaption>Hometown Beach</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_3697.jpeg" alt="Vinyl records and turntable" class="expandable"
-                            loading="lazy" decoding="async">
+                        <img data-src="images/IMG_3697.jpeg" alt="Vinyl records and turntable"
+                            class="expandable lazy-img" decoding="async">
                         <figcaption> Early Surfing</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_3137.jpeg" alt="Vinyl records and turntable" class="expandable"
-                            loading="lazy" decoding="async">
+                        <img data-src="images/IMG_3137.jpeg" alt="Vinyl records and turntable"
+                            class="expandable lazy-img" decoding="async">
                         <figcaption>Surfing</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_1291.jpeg" alt="Vinyl records and turntable" class="expandable"
-                            loading="lazy" decoding="async">
+                        <img data-src="images/IMG_1291.jpeg" alt="Vinyl records and turntable"
+                            class="expandable lazy-img" decoding="async">
                         <figcaption>Spear Fishing</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_6412.jpeg" alt="Outdoor rock climbing" class="expandable" loading="lazy"
+                        <img data-src="images/IMG_6412.jpeg" alt="Outdoor rock climbing" class="expandable lazy-img"
                             decoding="async">
                         <figcaption>Climbing</figcaption>
                     </figure>
                     <figure>
-                        <img src="images/IMG_4696.jpeg" alt="Surfing at the beach" class="expandable" loading="lazy"
+                        <img data-src="images/IMG_4696.jpeg" alt="Surfing at the beach" class="expandable lazy-img"
                             decoding="async">
                         <figcaption>Hiking</figcaption>
                     </figure>
@@ -473,6 +473,77 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') closeLightbox();
             });
+        })();
+    </script>
+    <script>
+        // Optimized lazy loading for images to prevent stuttering
+        (function () {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.dataset.src;
+
+                        if (src) {
+                            // Use requestAnimationFrame for smooth loading
+                            requestAnimationFrame(() => {
+                                // Create a temporary image to preload
+                                const tempImg = new Image();
+                                tempImg.onload = () => {
+                                    // Once loaded, apply with a smooth transition
+                                    requestAnimationFrame(() => {
+                                        img.src = src;
+                                        img.classList.add('loaded');
+                                        img.removeAttribute('data-src');
+                                    });
+                                };
+                                tempImg.src = src;
+                            });
+
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '50px', // Start loading 50px before entering viewport
+                threshold: 0.01
+            });
+
+            // Observe all lazy images
+            document.querySelectorAll('img.lazy-img').forEach(img => {
+                imageObserver.observe(img);
+            });
+
+            // Prefetch images when user scrolls near the Personal section
+            const personalSection = document.getElementById('Personal');
+            if (personalSection) {
+                const sectionObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            // Start preloading all gallery images in the background
+                            const galleryImages = personalSection.querySelectorAll('img.lazy-img');
+                            galleryImages.forEach((img, index) => {
+                                const src = img.dataset.src;
+                                if (src) {
+                                    // Stagger the preloading to avoid blocking
+                                    setTimeout(() => {
+                                        const preload = new Image();
+                                        preload.src = src;
+                                    }, index * 100); // 100ms delay between each
+                                }
+                            });
+                            sectionObserver.unobserve(personalSection);
+                        }
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '200px', // Start 200px before section
+                    threshold: 0
+                });
+
+                sectionObserver.observe(personalSection);
+            }
         })();
     </script>
 </body>
