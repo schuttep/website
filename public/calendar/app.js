@@ -59,7 +59,8 @@ function isEventOnDate(event, date) {
         case 'daily':
             return true;
         case 'weekly':
-            return daysDiff % 7 === 0;
+            // Same day of week and multiple of 7 days later
+            return eventDate.getDay() === dateOnly.getDay() && daysDiff % 7 === 0;
         case 'biweekly':
             return daysDiff % 14 === 0;
         case 'monthly':
