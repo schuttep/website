@@ -121,6 +121,30 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
         }
     };
 
+    const handleAdjustInvestment = async () => {
+        const amountStr = prompt('Enter amount to add (positive) or withdraw (negative):\nExample: 5000 to add $5,000 or -2000 to withdraw $2,000');
+
+        if (amountStr === null) return; // User cancelled
+
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount)) {
+            alert('Please enter a valid number');
+            return;
+        }
+
+        try {
+            const response = await axios.put(
+                `${API_BASE_URL}/api/portfolio/${portfolio.id}/adjust-investment`,
+                { amount }
+            );
+            onPortfolioUpdated(response.data.portfolio);
+            alert(response.data.message + `\nTotal Invested: $${response.data.totalInvested.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+        } catch (error) {
+            alert(error.response?.data?.error || 'Failed to adjust investment');
+            console.error('Error adjusting investment:', error);
+        }
+    };
+
     const handleEditDate = (stock) => {
         setEditingStockId(stock.id);
         const dateStr = new Date(stock.purchaseDate).toISOString().split('T')[0];
@@ -301,7 +325,7 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                     <div className="card-icon">💰</div>
                     <div className="card-content">
                         <h3>Total Value</h3>
-                        <p className="card-value">${portfolioMetrics.totalValue.toFixed(2)}</p>
+                        <p className="card-value">${(portfolioMetrics.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         <span className="card-subtitle">Current Portfolio Value</span>
                     </div>
                 </div>
@@ -310,10 +334,10 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                     <div className="card-content">
                         <h3>Total Gain/Loss</h3>
                         <p className="card-value">
-                            {portfolioMetrics.totalGainLoss >= 0 ? '+' : ''}${portfolioMetrics.totalGainLoss.toFixed(2)}
+                            {portfolioMetrics.totalGainLoss >= 0 ? '+' : ''}${(Math.abs(portfolioMetrics.totalGainLoss) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                         <span className="card-subtitle">
-                            {portfolioMetrics.totalGainLossPercentage >= 0 ? '+' : ''}{portfolioMetrics.totalGainLossPercentage.toFixed(2)}%
+                            {portfolioMetrics.totalGainLossPercentage >= 0 ? '+' : ''}{(portfolioMetrics.totalGainLossPercentage || 0).toFixed(2)}%
                         </span>
                     </div>
                 </div>
@@ -331,7 +355,7 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                     <div className="card-icon">📊</div>
                     <div className="card-content">
                         <h3>Total Invested</h3>
-                        <p className="card-value">${portfolioMetrics.totalInvested.toFixed(2)}</p>
+                        <p className="card-value">${(portfolioMetrics.totalInvested || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         <span className="card-subtitle">{portfolio.assets?.length || 0} Holdings</span>
                     </div>
                 </div>
@@ -382,6 +406,13 @@ function PortfolioDetail({ portfolio, onStockAdded, onPortfolioUpdated }) {
                     title="Refresh all stock prices"
                 >
                     {refreshing ? '⟳ Updating...' : '⟳ Refresh Prices'}
+                </button>
+                <button
+                    className="adjust-investment-btn"
+                    onClick={handleAdjustInvestment}
+                    title="Add or withdraw investment capital"
+                >
+                    💰 Adjust Investment
                 </button>
             </div>
 

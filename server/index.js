@@ -195,6 +195,17 @@ function saveAIPortfolio() {
 // Load portfolios from file on startup
 let portfolios = loadPortfolios();
 
+// Migrate existing portfolios to add totalInvested if missing
+portfolios.forEach(portfolio => {
+    if (portfolio.totalInvested === undefined) {
+        portfolio.totalInvested = portfolio.assets.reduce((sum, asset) => {
+            return sum + (asset.purchasePrice * asset.quantity);
+        }, 0);
+        console.log(`Migrated ${portfolio.name}: totalInvested = $${portfolio.totalInvested.toFixed(2)}`);
+    }
+});
+savePortfolios();
+
 // Load calendar events from file on startup
 let calendarEvents = loadCalendarEvents();
 
@@ -625,6 +636,10 @@ app.post('/api/portfolio/:portfolioId/stocks', async (req, res) => {
             });
         }
 
+        // Update portfolio total invested (add the cost of new purchase)
+        if (!portfolio.totalInvested) portfolio.totalInvested = 0;
+        portfolio.totalInvested += purchasePrice * quantity;
+
         // Update portfolio total value
         portfolio.totalValue = portfolio.assets.reduce((sum, asset) => sum + asset.totalValue, 0);
 
@@ -652,7 +667,12 @@ app.delete('/api/portfolio/:portfolioId/stocks/:stockId', (req, res) => {
         return res.status(404).json({ error: 'Stock not found in portfolio' });
     }
 
-    const removedStock = portfolio.assets.splice(stockIndex, 1);
+    const removedStock = portfolio.assets.splice(stockIndex, 1)[0];
+
+    // Update portfolio total invested (subtract the original cost)
+    if (!portfolio.totalInvested) portfolio.totalInvested = 0;
+    portfolio.totalInvested -= removedStock.purchasePrice * removedStock.quantity;
+    if (portfolio.totalInvested < 0) portfolio.totalInvested = 0;
 
     // Update portfolio total value
     portfolio.totalValue = portfolio.assets.reduce((sum, asset) => sum + asset.totalValue, 0);
@@ -749,6 +769,11 @@ app.put('/api/portfolio/:portfolioId/stocks/:stockId/purchase-price', (req, res)
         return res.status(400).json({ error: 'Purchase price is required' });
     }
 
+    // Update totalInvested (remove old cost, add new cost)
+    if (!portfolio.totalInvested) portfolio.totalInvested = 0;
+    portfolio.totalInvested -= stock.purchasePrice * stock.quantity;
+    portfolio.totalInvested += purchasePrice * stock.quantity;
+
     const newPrice = parseFloat(purchasePrice);
     if (isNaN(newPrice) || newPrice < 0) {
         return res.status(400).json({ error: 'Purchase price must be a valid positive number' });
@@ -769,6 +794,48 @@ app.put('/api/portfolio/:portfolioId/stocks/:stockId/purchase-price', (req, res)
     } catch (error) {
         res.status(500).json({ error: 'Failed to update purchase price', message: error.message });
     }
+});
+
+// Adjust portfolio investment (add/remove capital)
+app.put('/api/portfolio/:portfolioId/adjust-investment', (req, res) => {
+    const portfolio = portfolios.find(p => p.id === req.params.portfolioId);
+
+    if (!portfolio) {
+        return res.status(404).json({ error: 'Portfolio not found' });
+    }
+
+    const { amount, note } = req.body;
+
+    if (amount === undefined || amount === null) {
+        return res.status(400).json({ error: 'Amount is required' });
+    }
+
+    const adjustment = parseFloat(amount);
+    if (isNaN(adjustment)) {
+        return res.status(400).json({ error: 'Amount must be a valid number' });
+    }
+
+    // Initialize totalInvested if missing
+    if (!portfolio.totalInvested) portfolio.totalInvested = 0;
+
+    // Adjust the investment
+    portfolio.totalInvested += adjustment;
+
+    // Don't allow negative totalInvested
+    if (portfolio.totalInvested < 0) {
+        return res.status(400).json({ error: 'Cannot withdraw more than total invested' });
+    }
+
+    savePortfolios();
+
+    const action = adjustment >= 0 ? 'Added' : 'Withdrew';
+    console.log(`${action} $${Math.abs(adjustment).toFixed(2)} ${adjustment >= 0 ? 'to' : 'from'} ${portfolio.name}. Total invested: $${portfolio.totalInvested.toFixed(2)}`);
+
+    res.json({
+        portfolio,
+        message: `${action} $${Math.abs(adjustment).toFixed(2)}`,
+        totalInvested: portfolio.totalInvested
+    });
 });
 
 // Endpoint to manually update all prices
@@ -1025,36 +1092,62 @@ function syncAIPortfolioToManager() {
         // Find or create AI Portfolio in portfolios list
         let aiPortfolioIndex = portfolios.findIndex(p => p.id === 'ai-managed-portfolio');
 
-        // Get current positions and prices
+        // Get current positions and NAV
         const positions = aiPortfolioData.modelPerformance.positions;
         const currentNAV = aiPortfolioData.modelPerformance.currentNAV;
+        const startingNAV = aiPortfolioData.modelPerformance.startingNAV;
+
+        // Calculate cost basis: distribute the starting NAV proportionally to current positions
+        // This shows what the "purchase price" would have been if we bought at inception
+        const totalCurrentValue = Object.keys(positions)
+            .filter(symbol => symbol !== 'CASH')
+            .reduce((sum, symbol) => sum + (positions[symbol]?.value || 0), 0);
+
+        // If we have no positions yet, use starting NAV
+        const costBasisMultiplier = totalCurrentValue > 0 ? startingNAV / totalCurrentValue : 1;
 
         // Convert positions to portfolio assets format
-        const assets = Object.entries(positions).map(([symbol, pos]) => {
-            const currentPrice = pos.value / pos.shares;
-            const purchasePrice = currentPrice; // Using current as we don't track individual purchases
+        const assets = Object.entries(positions)
+            .filter(([symbol]) => symbol !== 'CASH')
+            .map(([symbol, pos]) => {
+                if (!pos.shares || pos.shares === 0) return null;
 
-            return {
-                id: `ai-${symbol.toLowerCase()}`,
-                symbol: symbol,
-                name: stockNames[symbol] || symbol,
-                quantity: Math.round(pos.shares * 100) / 100,
-                purchasePrice: Math.round(purchasePrice * 100) / 100,
-                currentPrice: Math.round(currentPrice * 100) / 100,
-                totalValue: Math.round(pos.value * 100) / 100,
-                currency: 'USD',
-                purchaseDate: aiPortfolioData.currentAllocation.date || new Date().toISOString(),
-                addedAt: new Date().toISOString()
-            };
-        }).filter(asset => asset.quantity > 0);
+                const currentPrice = pos.value / pos.shares;
+                // Calculate purchase price to show proper gain/loss
+                // purchasePrice * shares * currentNAV/startingNAV = currentValue
+                const purchasePrice = currentPrice * costBasisMultiplier;
+
+                return {
+                    id: `ai-${symbol.toLowerCase()}`,
+                    symbol: symbol,
+                    name: stockNames[symbol] || symbol,
+                    quantity: Math.round(pos.shares * 100) / 100,
+                    purchasePrice: Math.round(purchasePrice * 100) / 100,
+                    currentPrice: Math.round(currentPrice * 100) / 100,
+                    totalValue: Math.round(pos.value * 100) / 100,
+                    currency: 'USD',
+                    purchaseDate: aiPortfolioData.modelPerformance.startDate || new Date().toISOString(),
+                    addedAt: new Date().toISOString()
+                };
+            })
+            .filter(asset => asset !== null);
+
+        // Calculate total invested (should equal starting NAV distributed across positions)
+        const totalInvested = assets.reduce((sum, asset) => sum + (asset.purchasePrice * asset.quantity), 0);
 
         const aiPortfolio = {
             id: 'ai-managed-portfolio',
             name: '🤖 AI Managed Portfolio',
             totalValue: Math.round(currentNAV * 100) / 100,
             assets: assets,
-            createdAt: aiPortfolioData.modelPerformance.equityCurve[0]?.date || new Date().toISOString(),
-            isAIManaged: true
+            createdAt: aiPortfolioData.modelPerformance.startDate || new Date().toISOString(),
+            isAIManaged: true,
+            metadata: {
+                startingNAV: startingNAV,
+                totalInvested: Math.round(totalInvested * 100) / 100,
+                gainLoss: Math.round((currentNAV - startingNAV) * 100) / 100,
+                gainLossPercent: ((currentNAV - startingNAV) / startingNAV * 100).toFixed(2)
+            }
         };
 
         if (aiPortfolioIndex >= 0) {
@@ -1064,7 +1157,7 @@ function syncAIPortfolioToManager() {
         }
 
         savePortfolios();
-        console.log('AI Portfolio synced to Portfolio Manager');
+        console.log(`AI Portfolio synced: $${currentNAV.toFixed(2)} (${((currentNAV - startingNAV) / startingNAV * 100).toFixed(2)}% return)`);
     } catch (error) {
         console.error('Failed to sync AI Portfolio:', error);
     }

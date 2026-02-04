@@ -200,21 +200,27 @@ function AIPortfolio() {
                     <div className="performance-summary">
                         <div className="perf-card">
                             <h3>Starting NAV</h3>
-                            <p className="perf-value">${performance.startingNAV.toLocaleString()}</p>
+                            <p className="perf-value">${performance.startingNAV.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            <span className="perf-subtitle">{performance.startDate}</span>
                         </div>
                         <div className="perf-card">
                             <h3>Current NAV</h3>
-                            <p className="perf-value">${performance.currentNAV.toLocaleString()}</p>
+                            <p className="perf-value">${performance.currentNAV.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            <span className="perf-subtitle">Latest Value</span>
                         </div>
                         <div className={`perf-card ${performance.currentNAV >= performance.startingNAV ? 'positive' : 'negative'}`}>
-                            <h3>Total Return</h3>
+                            <h3>Total Gain/Loss</h3>
                             <p className="perf-value">
-                                {((performance.currentNAV - performance.startingNAV) / performance.startingNAV * 100).toFixed(2)}%
+                                {performance.currentNAV >= performance.startingNAV ? '+' : ''}${(performance.currentNAV - performance.startingNAV).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
+                            <span className="perf-subtitle">
+                                {performance.currentNAV >= performance.startingNAV ? '+' : ''}{((performance.currentNAV - performance.startingNAV) / performance.startingNAV * 100).toFixed(2)}%
+                            </span>
                         </div>
                         <div className="perf-card">
-                            <h3>Since</h3>
-                            <p className="perf-value">{performance.startDate}</p>
+                            <h3>Rebalances</h3>
+                            <p className="perf-value">{rebalanceHistory.length}</p>
+                            <span className="perf-subtitle">Total Trades</span>
                         </div>
                     </div>
 

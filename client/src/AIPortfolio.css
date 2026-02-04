@@ -270,6 +270,13 @@
     color: #333;
 }
 
+.perf-subtitle {
+    display: block;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
 .perf-card.positive .perf-value {
     color: #28a745;
 }
