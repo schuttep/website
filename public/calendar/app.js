@@ -27,10 +27,9 @@ let currentDate = new Date();
 let allEvents = [];
 
 function isEventOnDate(event, date) {
-    const eventDate = new Date(event.date);
-    const dateOnly = new Date(date);
-    eventDate.setHours(0, 0, 0, 0);
-    dateOnly.setHours(0, 0, 0, 0);
+    const [eyear, emonth, eday] = event.date.split('-').map(Number);
+    const eventDate = new Date(eyear, emonth - 1, eday);
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
     if (eventDate.getTime() === dateOnly.getTime()) {
         return true;
@@ -40,12 +39,14 @@ function isEventOnDate(event, date) {
         return false;
     }
 
-    const endDate = event.recurrenceEndDate ? new Date(event.recurrenceEndDate) : null;
-    if (endDate) {
-        endDate.setHours(0, 0, 0, 0);
-        if (dateOnly.getTime() > endDate.getTime()) {
-            return false;
-        }
+    let endDate = null;
+    if (event.recurrenceEndDate) {
+        const [edyear, edmonth, edday] = event.recurrenceEndDate.split('-').map(Number);
+        endDate = new Date(edyear, edmonth - 1, edday);
+    }
+
+    if (endDate && dateOnly.getTime() > endDate.getTime()) {
+        return false;
     }
 
     if (dateOnly.getTime() < eventDate.getTime()) {
