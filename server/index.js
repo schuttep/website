@@ -1672,6 +1672,55 @@ app.delete('/api/chess/tasks/:section/:taskId', (req, res) => {
     res.json({ message: 'Task deleted', task: removed[0] });
 });
 
+// Calendar API Endpoints
+app.get('/api/chess/calendar', (req, res) => {
+    const events = chessProjectData.calendar || { group: {}, payton: {}, quinn: {}, danny: {} };
+    res.json({ events });
+});
+
+app.post('/api/chess/calendar/:person/:date', (req, res) => {
+    const { person, date } = req.params;
+    const { title, id } = req.body;
+
+    if (!['group', 'payton', 'quinn', 'danny'].includes(person)) {
+        return res.status(400).json({ error: 'Invalid person' });
+    }
+
+    if (!chessProjectData.calendar) {
+        chessProjectData.calendar = { group: {}, payton: {}, quinn: {}, danny: {} };
+    }
+
+    if (!chessProjectData.calendar[person]) {
+        chessProjectData.calendar[person] = {};
+    }
+
+    if (!chessProjectData.calendar[person][date]) {
+        chessProjectData.calendar[person][date] = [];
+    }
+
+    const event = { title, id };
+    chessProjectData.calendar[person][date].push(event);
+    saveChessProject();
+    res.status(201).json(event);
+});
+
+app.delete('/api/chess/calendar/:person/:date/:eventId', (req, res) => {
+    const { person, date, eventId } = req.params;
+
+    if (!chessProjectData.calendar || !chessProjectData.calendar[person] || !chessProjectData.calendar[person][date]) {
+        return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const index = chessProjectData.calendar[person][date].findIndex(e => e.id === eventId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const removed = chessProjectData.calendar[person][date].splice(index, 1);
+    saveChessProject();
+    res.json({ message: 'Event deleted', event: removed[0] });
+});
+
 // =============================================================================
 // END CHESS BOARD PROJECT API
 // =============================================================================

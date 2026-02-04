@@ -134,3 +134,144 @@ function renderAllTasks() {
     renderTasks('software');
     renderTasks('internet');
 }
+// Weekly Calendar
+let currentWeekStart = new Date();
+currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
+let calendarEvents = { group: {}, payton: {}, quinn: {}, danny: {} };
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Load calendar events on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    // Tasks load already happens
+    // Now load calendar
+    await loadCalendarEvents();
+    renderWeeklyCalendar();
+});
+
+// Load calendar events from API
+async function loadCalendarEvents() {
+    try {
+        const response = await fetch('/api/chess/calendar');
+        const data = await response.json();
+        calendarEvents = data.events || { group: {}, payton: {}, quinn: {}, danny: {} };
+        renderWeeklyCalendar();
+    } catch (error) {
+        console.error('Error loading calendar events:', error);
+    }
+}
+
+// Get week range display
+function getWeekRangeDisplay() {
+    const end = new Date(currentWeekStart);
+    end.setDate(end.getDate() + 6);
+
+    const options = { month: 'short', day: 'numeric' };
+    const startStr = currentWeekStart.toLocaleDateString('en-US', options);
+    const endStr = end.toLocaleDateString('en-US', options);
+    return `${startStr} - ${endStr}`;
+}
+
+// Navigate weeks
+function previousWeek() {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    renderWeeklyCalendar();
+}
+
+function nextWeek() {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    renderWeeklyCalendar();
+}
+
+// Render all weekly calendars
+function renderWeeklyCalendar() {
+    document.getElementById('week-display').textContent = `Week of ${getWeekRangeDisplay()}`;
+
+    renderCalendarForPerson('group');
+    renderCalendarForPerson('payton');
+    renderCalendarForPerson('quinn');
+    renderCalendarForPerson('danny');
+}
+
+// Render calendar for specific person
+function renderCalendarForPerson(person) {
+    const container = document.getElementById(`${person}-calendar`);
+    let html = '<div class="days-grid">';
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = WEEKDAYS[i];
+        const dayNum = date.getDate();
+
+        const dayEvents = calendarEvents[person][dateStr] || [];
+
+        html += `
+            <div class="day-column">
+                <div class="day-header">${dayName}</div>
+                <div class="day-num">${dayNum}</div>
+                <div class="day-events">
+                    ${dayEvents.map(evt => `
+                        <div class="event-badge" onclick="deleteCalendarEvent('${person}', '${dateStr}', '${evt.id}')">
+                            ${evt.title}
+                            <span class="delete-hint">✕</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// Add calendar event
+async function addCalendarEvent(person) {
+    const input = document.getElementById(`${person}-event-input`);
+    const daySelect = document.getElementById(`${person}-day-select`);
+
+    const title = input.value.trim();
+    const dayOffset = parseInt(daySelect.value);
+
+    if (!title) return;
+
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + dayOffset);
+    const dateStr = date.toISOString().split('T')[0];
+
+    try {
+        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                id: Date.now().toString()
+            })
+        });
+
+        if (response.ok) {
+            input.value = '';
+            daySelect.value = '0';
+            await loadCalendarEvents();
+        }
+    } catch (error) {
+        console.error('Error adding event:', error);
+    }
+}
+
+// Delete calendar event
+async function deleteCalendarEvent(person, dateStr, eventId) {
+    try {
+        const response = await fetch(`/api/chess/calendar/${person}/${dateStr}/${eventId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            await loadCalendarEvents();
+        }
+    } catch (error) {
+        console.error('Error deleting event:', error);
+    }
+}
