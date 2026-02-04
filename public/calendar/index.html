@@ -46,7 +46,7 @@
         </section>
 
         <section class="card">
-            <h2>Add Event</h2>
+            <h2 id="form-title">Add Event</h2>
             <form id="event-form" class="event-form">
                 <label>
                     Title
@@ -93,7 +93,10 @@
                     Notes
                     <textarea id="notes" name="notes" rows="3"></textarea>
                 </label>
-                <button type="submit">Create Event</button>
+                <div class="form-actions">
+                    <button type="submit" id="submit-btn">Create Event</button>
+                    <button type="button" id="cancel-edit-btn" style="display: none;">Cancel</button>
+                </div>
             </form>
         </section>
 

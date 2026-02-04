@@ -185,12 +185,37 @@ body {
     gap: 8px;
 }
 
+.event-actions button.edit {
+    background: #4a9eff;
+}
+
+.event-actions button.edit:hover {
+    background: #3178d9;
+}
+
 .event-actions button.delete {
     background: #e04848;
 }
 
 .event-actions button.delete:hover {
     background: #b93535;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.form-actions button {
+    flex: 1;
+}
+
+#cancel-edit-btn {
+    background: #6c757d;
+}
+
+#cancel-edit-btn:hover {
+    background: #5a6268;
 }
 
 /* Calendar Grid */

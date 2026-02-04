@@ -13,6 +13,9 @@ const recurrenceEndLabel = document.getElementById('recurrence-end-label');
 const recurrenceEndDateInput = document.getElementById('recurrence-end-date');
 const ownerInput = document.getElementById('owner');
 const filterButtons = document.querySelectorAll('.filter-btn');
+const formTitle = document.getElementById('form-title');
+const submitBtn = document.getElementById('submit-btn');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
 
 const colorNames = {
     '#2c6bff': 'Blue',
@@ -28,6 +31,7 @@ const colorNames = {
 let currentDate = new Date();
 let allEvents = [];
 let ownerFilter = 'both';
+let editingEventId = null;
 
 function matchesOwnerFilter(event) {
     if (ownerFilter === 'both') return true;
@@ -208,11 +212,17 @@ function renderEvents(events) {
         const actions = document.createElement('div');
         actions.className = 'event-actions';
 
+        const editBtn = document.createElement('button');
+        editBtn.className = 'edit';
+        editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => handleEdit(event));
+
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete';
         deleteBtn.textContent = 'Delete';
         deleteBtn.addEventListener('click', () => handleDelete(event.id));
 
+        actions.appendChild(editBtn);
         actions.appendChild(deleteBtn);
 
         card.appendChild(title);
@@ -231,27 +241,84 @@ async function handleCreate(event) {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-        const response = await fetch('/api/calendar/events', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        if (editingEventId) {
+            // Update existing event
+            const response = await fetch(`/api/calendar/events/${editingEventId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to create event');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update event');
+            }
+
+            resetForm();
+            await fetchEvents();
+        } else {
+            // Create new event
+            const response = await fetch('/api/calendar/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create event');
+            }
+
+            resetForm();
+            await fetchEvents();
         }
-
-        form.reset();
-        colorInput.value = '#2c6bff';
-        colorLabel.textContent = 'Blue';
-        recurrenceInput.value = 'none';
-        recurrenceEndLabel.style.display = 'none';
-        ownerInput.value = 'A';
-        await fetchEvents();
     } catch (error) {
         statusEl.textContent = error.message;
     }
+}
+
+function handleEdit(event) {
+    editingEventId = event.id;
+
+    // Populate form with event data
+    document.getElementById('title').value = event.title;
+    document.getElementById('date').value = event.date;
+    document.getElementById('time').value = event.time || '';
+    document.getElementById('notes').value = event.notes || '';
+    colorInput.value = event.color || '#2c6bff';
+    colorLabel.textContent = colorNames[event.color] || 'Custom';
+    recurrenceInput.value = event.recurrence || 'none';
+    ownerInput.value = event.owner || 'A';
+
+    if (event.recurrenceEndDate) {
+        recurrenceEndDateInput.value = event.recurrenceEndDate;
+    }
+
+    if (recurrenceInput.value !== 'none') {
+        recurrenceEndLabel.style.display = 'grid';
+    }
+
+    // Update form UI
+    formTitle.textContent = 'Edit Event';
+    submitBtn.textContent = 'Update Event';
+    cancelEditBtn.style.display = 'inline-block';
+
+    // Scroll to form
+    form.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('title').focus();
+}
+
+function resetForm() {
+    form.reset();
+    editingEventId = null;
+    colorInput.value = '#2c6bff';
+    colorLabel.textContent = 'Blue';
+    recurrenceInput.value = 'none';
+    recurrenceEndLabel.style.display = 'none';
+    ownerInput.value = 'A';
+    formTitle.textContent = 'Create New Event';
+    submitBtn.textContent = 'Create Event';
+    cancelEditBtn.style.display = 'none';
 }
 
 async function handleDelete(id) {
@@ -271,6 +338,7 @@ async function handleDelete(id) {
 }
 
 form.addEventListener('submit', handleCreate);
+cancelEditBtn.addEventListener('click', resetForm);
 colorInput.addEventListener('change', () => {
     colorLabel.textContent = colorNames[colorInput.value] || 'Custom';
 });
